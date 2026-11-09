@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# API keys and environment variables
+.env
+.env.*
+!.env.example
+
+# Generated outputs
+outputs/*
+!outputs/.gitkeep
+
+# Logs and temporary files
+*.log
+*.tmp
+.DS_Store
+
+# IDE files
+.idea/
+.vscode/
+
+# R
+.Rhistory
+
+# CODESYS temporary and backup files
+*.autosave
+*.backup
+*.project~
