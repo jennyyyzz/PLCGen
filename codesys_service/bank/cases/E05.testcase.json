@@ -1,0 +1,28 @@
+{
+  "task_id": "E05_WeldGap",
+  "title": "Weld Gap Alarm and Startup Inhibition",
+  "pou": "E05_WeldGap",
+  "scan_ms": 100,
+  "interface": [
+    {"name": "Gap_Exceeded", "dir": "input", "type": "BOOL"},
+    {"name": "Weld_E_Stop_NC", "dir": "input", "type": "BOOL"},
+    {"name": "DebounceTime", "dir": "input", "type": "TIME"},
+    {"name": "Operator_Alert", "dir": "output", "type": "BOOL"},
+    {"name": "Weld_Soft_Start_Active", "dir": "output", "type": "BOOL"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "5s inhibition then debounced alarm",
+      "coverage": "power-up inhibition, debounce window, alarm, e-stop priority",
+      "initial_state": "no gap, no e-stop, DebounceTime=T#1S",
+      "steps": [
+        {"cycle": 0, "inputs": {"Gap_Exceeded": 0, "Weld_E_Stop_NC": 1, "DebounceTime": 1000}, "expect": {"Weld_Soft_Start_Active": 1, "Operator_Alert": 0}, "check": "power-up inhibition active"},
+        {"cycle": 1, "inputs": {"Gap_Exceeded": 1, "Weld_E_Stop_NC": 1, "DebounceTime": 1000}, "hold_ms": 5000, "expect": {"Weld_Soft_Start_Active": 0, "Operator_Alert": 0}, "check": "after 5s init over; debounce just started, no alert yet"},
+        {"cycle": 2, "inputs": {"Gap_Exceeded": 1, "Weld_E_Stop_NC": 1, "DebounceTime": 1000}, "hold_ms": 1000, "expect": {"Operator_Alert": 1}, "check": "gap held 1s, alarm on"},
+        {"cycle": 3, "inputs": {"Gap_Exceeded": 1, "Weld_E_Stop_NC": 0, "DebounceTime": 1000}, "expect": {"Operator_Alert": 0}, "check": "e-stop has priority, alert off immediately"},
+        {"cycle": 4, "inputs": {"Gap_Exceeded": 1, "Weld_E_Stop_NC": 1, "DebounceTime": 1000}, "hold_ms": 900, "expect": {"Operator_Alert": 0}, "check": "debounce cleared by e-stop, timing restarted"}
+      ]
+    }
+  ]
+}

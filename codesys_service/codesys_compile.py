@@ -117,6 +117,40 @@ def resolve_profile(explicit: str | None) -> tuple[str | None, list[str]]:
 
 # ------------------------------------------------------------------ 任务准备
 
+# Standard Library 里的常用函数（库未解析时编译报「没有定义标识符'XXX'」）
+STDLIB_FUNCS = ("LEN", "MID", "LEFT", "RIGHT", "CONCAT", "INSERT", "DELETE",
+                "REPLACE", "FIND", "TIME", "ADR", "SIZEOF")
+_STDLIB_HINT = (
+    "提示: %s 属于 CODESYS Standard Library，但当前工程没有解析到 Standard 库"
+    "（状态: %s）。请确认宿主机已安装 Standard（Managed Libraries 下的 "
+    "System\\Standard\\<version>），并用 `python codesys_compile.py --make-template` "
+    "重新生成模板工程。")
+
+
+def _stdlib_missing(status) -> bool:
+    if isinstance(status, dict):
+        status = status.get("status")
+    s = str(status or "").strip().lower()
+    return s in ("missing", "no libman", "no librarymanager", "fail")
+
+
+def _annotate_stdlib_hints(errors: list, stdlib_status=None) -> list:
+    """库确实没解析到时，才给「没有定义标识符'LEN'」补环境说明。"""
+    out = list(errors)
+    if not _stdlib_missing(stdlib_status):
+        return out
+    try:
+        text = " ".join(str(e.get("text", "")) for e in out)
+        for fn in STDLIB_FUNCS:
+            if ("'%s'" % fn) in text and "没有定义标识符" in text:
+                out.append({"level": "error",
+                            "text": _STDLIB_HINT % (fn, stdlib_status)})
+                break
+    except Exception:
+        pass
+    return out
+
+
 def sanitize_pou(name: str) -> str:
     s = re.sub(r"[^0-9A-Za-z_]", "_", name)
     if not s or s[0].isdigit():
@@ -124,15 +158,25 @@ def sanitize_pou(name: str) -> str:
     return s[:60]
 
 
-def collect_jobs(target: Path, default_pou: str) -> list[dict]:
+def collect_jobs(target: Path, default_pou: str | None) -> list[dict]:
+    """单文件：用 --pou，未指定则交给内层脚本按代码头自动识别。
+
+    批量：每个文件一个独立 POU（名字取文件名，重名加序号）。共用 PLC_PRG 会把
+    上一题的 POU 类型/声明带进下一题（20 道 FB 题全撞车），必须分开。
+    """
     if target.is_file():
         return [{"name": target.stem, "st": str(target.resolve()),
                  "pou": default_pou}]
     jobs = []
+    used: set[str] = set()
     for f in sorted(target.rglob("*.st")):
-        # 整批共用一个 POU：每次覆盖内容，上一题的代码不会残留
-        jobs.append({"name": f.stem, "st": str(f.resolve()),
-                     "pou": default_pou})
+        base = sanitize_pou(f.stem)
+        name, i = base, 1
+        while name.lower() in used:
+            i += 1
+            name = "%s_%d" % (base, i)
+        used.add(name.lower())
+        jobs.append({"name": f.stem, "st": str(f.resolve()), "pou": name})
     return jobs
 
 
@@ -230,6 +274,8 @@ def compile_with_codesys(jobs: list[dict], project: Path, exe: Path,
                          "duration_s": run["duration_s"],
                          "stdout_tail": run["text"][-2000:],
                          "stderr_tail": ""}
+    if isinstance(result.get("api"), dict):
+        result["stdlib"] = result["api"].get("stdlib")
     shutil.rmtree(workdir, ignore_errors=True)
     shutil.rmtree(run["workdir"], ignore_errors=True)
     return result
@@ -270,8 +316,9 @@ def main(argv=None):
 
     ap = argparse.ArgumentParser(description="CODESYS 命令行编译封装")
     ap.add_argument("--st", required=False, help=".st 文件或目录")
-    ap.add_argument("--pou", default="PLC_PRG",
-                    help="目标 POU 名（单文件模式用；批量模式用文件名）")
+    ap.add_argument("--pou", default=None,
+                    help="目标 POU 名（单文件模式用；省略则沿用 ST 里声明的名字；"
+                         "批量模式按文件名）")
     ap.add_argument("--project", help="模板工程 .project 路径")
     ap.add_argument("--backend", default="auto",
                     choices=["auto", "codesys", "lint"],
@@ -371,9 +418,11 @@ def main(argv=None):
         raw_items = result.get("items", [])
         fatal = result.get("fatal")
         process = result.get("process")
+        stdlib_status = result.get("stdlib")
     else:
         skipped = jobs
         raw_items, fatal, process = [], None, None
+        stdlib_status = None
 
     # ---- 3) 汇总
     by_name = {i.get("name"): i for i in raw_items if isinstance(i, dict)}
@@ -384,7 +433,8 @@ def main(argv=None):
         item = {
             "task": job["name"],
             "st": st,
-            "pou": job["pou"],
+            # 内层可能按代码头自动识别/改名，以它实际写进工程的名字为准
+            "pou": (by_name.get(job["name"]) or {}).get("pou") or job["pou"],
             "lint_ok": lint.get("ok", True),
             "lint_errors": lint.get("errors", []),
             "lint_warnings": lint.get("warnings", []),
@@ -419,6 +469,8 @@ def main(argv=None):
                 item["duration_s"] = got.get("duration_s", 0.0)
                 item["api"] = got.get("api", {})
                 item["result"] = "PASS" if item["ok"] else "COMPILE_FAIL"
+                item["errors"] = _annotate_stdlib_hints(item["errors"],
+                                                        stdlib_status)
         items.append(item)
 
     total = len(items)
@@ -436,6 +488,8 @@ def main(argv=None):
             max(1, sum(1 for i in items if i["compiled"])), 2),
     }
     payload = {"env": env_info, "summary": summary, "items": items}
+    if stdlib_status is not None:
+        payload["stdlib"] = stdlib_status
     if fatal:
         payload["fatal"] = fatal
     if process:

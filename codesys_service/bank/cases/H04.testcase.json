@@ -1,0 +1,42 @@
+{
+  "task_id": "H04_FIFO",
+  "title": "FIFO First-In-First-Out Queue",
+  "pou": "H04_FIFO",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "enqueue", "dir": "input", "type": "BOOL"},
+    {"name": "dequeue", "dir": "input", "type": "BOOL"},
+    {"name": "reset", "dir": "input", "type": "BOOL"},
+    {"name": "item", "dir": "inout", "type": "DINT"},
+    {"name": "elementCount", "dir": "output", "type": "DINT"},
+    {"name": "status", "dir": "output", "type": "WORD"},
+    {"name": "buffer[0]", "dir": "inout", "type": "DINT"},
+    {"name": "buffer[1]", "dir": "inout", "type": "DINT"},
+    {"name": "buffer[2]", "dir": "inout", "type": "DINT"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "enqueue/dequeue round trip and rejects",
+      "coverage": "FIFO order, empty-dequeue 16#8001, reset; request signals are pulsed (rising edges)",
+      "initial_state": "queue empty, item=0",
+      "steps": [
+        {"cycle": 0, "inputs": {"enqueue": 0, "dequeue": 0, "reset": 0, "item": 0}, "expect": {"elementCount": 0, "status": 0}, "check": "idle"},
+        {"cycle": 1, "inputs": {"dequeue": 1, "item": 0}, "expect": {"status": 32769, "elementCount": 0}, "check": "dequeue empty -> 16#8001"},
+        {"cycle": 2, "inputs": {"dequeue": 0}, "expect": {"status": 0, "elementCount": 0}, "check": "back to idle"},
+        {"cycle": 3, "inputs": {"enqueue": 1, "item": 11}, "expect": {"elementCount": 1, "buffer[0]": 11}, "check": "enqueue 11"},
+        {"cycle": 4, "inputs": {"enqueue": 0, "item": 22}, "expect": {"elementCount": 1}, "check": "no edge, no update"},
+        {"cycle": 5, "inputs": {"enqueue": 1, "item": 22}, "expect": {"elementCount": 2, "buffer[1]": 22}, "check": "enqueue 22"},
+        {"cycle": 6, "inputs": {"enqueue": 0, "item": 33}, "expect": {"elementCount": 2}, "check": "idle"},
+        {"cycle": 7, "inputs": {"enqueue": 1, "item": 33}, "expect": {"elementCount": 3, "buffer[2]": 33}, "check": "enqueue 33"},
+        {"cycle": 8, "inputs": {"enqueue": 0, "item": 44}, "expect": {"elementCount": 3}, "check": "idle"},
+        {"cycle": 9, "inputs": {"enqueue": 1, "item": 44}, "expect": {"elementCount": 4}, "check": "queue fills toward capacity 8"},
+        {"cycle": 10, "inputs": {"enqueue": 0, "dequeue": 0}, "expect": {"elementCount": 4}, "check": "idle"},
+        {"cycle": 11, "inputs": {"dequeue": 1, "item": 0}, "expect": {"item": 11, "elementCount": 3, "status": 0}, "check": "FIFO: front element 11 out"},
+        {"cycle": 12, "inputs": {"dequeue": 0, "item": 0}, "expect": {"elementCount": 3}, "check": "idle"},
+        {"cycle": 13, "inputs": {"dequeue": 1, "item": 0}, "expect": {"item": 22, "elementCount": 2}, "check": "next out is 22"},
+        {"cycle": 14, "inputs": {"dequeue": 0, "reset": 1}, "expect": {"elementCount": 0, "status": 0}, "check": "reset empties queue"}
+      ]
+    }
+  ]
+}

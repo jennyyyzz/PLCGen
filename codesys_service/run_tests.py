@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -44,6 +45,14 @@ TYPE_MAP = {
     "REAL": "PLCTYPE_REAL",
     "LREAL": "PLCTYPE_LREAL",
 }
+
+# 数组元素下标写法：Name[0] / Name[1] 等（问题 4-3）
+ARRAY_SUB_RE = re.compile(r"\[\s*-?\w+\s*\]")
+
+
+def _base_name(name: str) -> str:
+    """把 `Slab_Fault_History[0]` 归一成 `SLAB_FAULT_HISTORY`（数组基名）。"""
+    return ARRAY_SUB_RE.sub("", str(name).strip()).strip().upper()
 
 
 # ------------------------------------------------------------------ 用例读写
@@ -92,22 +101,25 @@ def run_dry(case: dict, declared: dict) -> dict:
         for s in c.get("steps", []):
             for grp in ("inputs", "expect"):
                 for var in (s.get(grp) or {}):
-                    referenced.add(var.upper())
-                    if iface and var.upper() not in iface and \
-                            declared and var.upper() not in declared:
+                    base = _base_name(var)
+                    referenced.add(base)
+                    if iface and base not in iface and \
+                            declared and base not in declared:
                         issues.append(
                             f"{cid} 周期{s.get('cycle')}: {grp} 里的 {var} "
                             f"既不在 interface 也不在 ST 声明里")
             if not s.get("expect"):
                 issues.append(f"{cid} 周期{s.get('cycle')}: 没有预期输出")
 
-    # 接口声明与 ST 声明互相校对
+    # 接口声明与 ST 声明互相校对（数组元素 Name[0] 归一到基名再比对；
+    # 元素类型（BOOL）与数组类型（ARRAY..OF BOOL）字符串不同，跳过类型比对）
     for name, spec in iface.items():
-        if declared and name not in declared:
+        base = _base_name(name)
+        if declared and base not in declared:
             issues.append(f"interface 里的 {name} 在 ST 文件里没有声明")
-        elif declared and declared.get(name):
+        elif declared and base == name and declared.get(base):
             t_if = str(spec.get("type", "")).upper()
-            t_st = declared[name].upper()
+            t_st = declared[base].upper()
             if t_if and t_if != t_st:
                 issues.append(f"{name} 类型不一致：interface={t_if} ST={t_st}")
 
@@ -141,7 +153,28 @@ def run_sim(case: dict, st_path: Path) -> dict:
     from st_sim import Program, Unsupported
 
     text = Path(st_path).read_text(encoding="utf-8", errors="replace")
-    prog = Program(text)
+    scan_ms = max(int(case.get("scan_ms", 20)), 1)
+    try:
+        prog = Program(text, scan_ms=scan_ms)
+    except Unsupported as exc:
+        # 解析期就失败（语法/字面量不支持等）：每个用例记 NOT_RUN 并带原因，
+        # 而不是让整个后端静默消失（total=0 会让人误以为没跑到用例）
+        return {
+            "task_id": case.get("task_id"),
+            "file": case.get("_file"),
+            "mode": "sim",
+            "st": str(st_path),
+            "error": str(exc),
+            "cases": [{
+                "id": c.get("id"), "name": c.get("name"),
+                "coverage": c.get("coverage"),
+                "initial_state": c.get("initial_state"),
+                "result": "NOT_RUN",
+                "steps": [{"cycle": "-", "inputs": {}, "expect": {}, "actual": {},
+                           "check": "", "ok": False,
+                           "diff": ["解释器不支持: %s" % exc]}],
+            } for c in case.get("cases", [])],
+        }
 
     iface = {v["name"].upper(): v for v in case.get("interface", [])}
     outputs = [k for k, v in iface.items() if v.get("dir") == "output"]
@@ -156,14 +189,18 @@ def run_sim(case: dict, st_path: Path) -> dict:
                 for name, val in (s.get("inputs") or {}).items():
                     t = prog.var_type(name)
                     prog.write(name, bool(val) if t == "BOOL" else val)
-                prog.scan()
+                # hold_ms：本步输入保持的时长（默认一个扫描周期）。
+                # 定时器类用例不用写几百个 step，一个 step + hold_ms 即可。
+                n = max(1, int(round((s.get("hold_ms") or scan_ms) / scan_ms)))
+                for _ in range(n):
+                    prog.scan()
                 want_names = list((s.get("expect") or {}).keys())
                 names = want_names or outputs
                 actual = {n: prog.read(n) for n in names}
                 diffs = []
                 for name, want in (s.get("expect") or {}).items():
                     got = actual.get(name)
-                    if _norm(got) != _norm(want):
+                    if _norm(got) != _norm(want) and not _close(_norm(got), _norm(want)):
                         diffs.append("%s 预期 %s 实际 %s" % (name, want, got))
                 ok = not diffs
                 case_ok = case_ok and ok
@@ -247,7 +284,8 @@ def run_ads(case: dict, ams: str, port: int, ip: str, settle_ms: int) -> dict:
             time.sleep(wait)
             for s in c.get("steps", []):
                 write_inputs(s.get("inputs", {}))
-                time.sleep(wait)
+                # hold_ms：本步输入保持的时长（默认一个周期等待）
+                time.sleep(max(wait, (s.get("hold_ms") or 0) / 1000.0))
                 actual = {}
                 for name, spec in outputs.items():
                     ctype = _ctype(pyads, spec.get("type", "BOOL"))
@@ -308,6 +346,13 @@ def _norm(v):
         return int(v)
     except Exception:
         return v
+
+
+def _close(a, b):
+    """数值近似相等（相对容差 1e-6）：浮点输出的期望值常写 33.333333 这类近似数。"""
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return abs(a - b) <= 1e-6 * max(1.0, abs(a), abs(b))
+    return False
 
 
 # ------------------------------------------------------------------ 报告渲染

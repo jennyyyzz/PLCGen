@@ -1,0 +1,22 @@
+FUNCTION_BLOCK E06_Blower
+VAR_INPUT
+    DO_LOW : BOOL;
+    AERATION_E_STOP_NC : BOOL;
+END_VAR
+VAR_OUTPUT
+    BLOWER_RUN : BOOL;
+    AERATION_BLOWER_CYCLE_COUNT : UINT;
+END_VAR
+VAR
+    delayTimer : TON;
+    prevRun : BOOL;
+END_VAR
+
+(* 5s start delay: IN goes FALSE on demand loss or e-stop, resetting timing *)
+delayTimer(IN := DO_LOW AND AERATION_E_STOP_NC, PT := T#5S);
+BLOWER_RUN := delayTimer.Q;
+
+IF BLOWER_RUN AND NOT prevRun THEN
+    AERATION_BLOWER_CYCLE_COUNT := AERATION_BLOWER_CYCLE_COUNT + 1;
+END_IF;
+prevRun := BLOWER_RUN;

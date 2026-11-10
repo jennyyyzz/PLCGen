@@ -18,6 +18,130 @@ import traceback
 
 PROGRESS = re.compile(r"(开始构建|代码典型化|编译完成|生成代码|正在准备|正在编译)")
 
+# ---------------------------------------------------------------------------
+# Standard Library 引用（正解，2026-11-10 实测）
+#
+# 背景：本机其实装着 Standard Library：
+#   C:\ProgramData\CODESYS\Managed Libraries\System\Standard\3.5.22.0
+# 之前 `lm.add_library("Standard, * (System)")` 只写引用不装载（noUI 下
+# 后台装载不启动），编译仍报「未知的类型: 'TON'」。
+# 正确姿势：用全局 librarymanager 模块从仓库拿到真实库对象，再
+#   libman.add_placeholder("Standard", lib)
+# 占位符在 build 时解析，真库生效 —— TON/TOF/TP/LEN/MID 等全部可编译。
+# 若目标机器仓库里没有 Standard（找不到库对象），回退到 TON/TOF/TP 编译桩。
+# ---------------------------------------------------------------------------
+def ensure_standard_library(proj):
+    """在工程的库管理器里引用真 Standard Library。成功返回 True。"""
+    libman = None
+    for obj in proj.get_children(True):
+        try:
+            if getattr(obj, "is_libman", False):
+                libman = obj
+                break
+        except Exception:
+            pass
+    if libman is None:
+        return False
+    # 已引用过（重开工程/重复生成）就不重复加。
+    # 注意不能用子串匹配：#IoStandard 里也含 "Standard"。
+    try:
+        for ref in libman.get_libraries():
+            try:
+                nm = str(ref).lstrip("#").split(",")[0].strip()
+                if nm == "Standard":
+                    return True
+            except Exception:
+                pass
+    except Exception:
+        pass
+    lmg = globals().get("librarymanager")
+    if lmg is None:
+        return False
+    try:
+        for repo in lmg.repositories:
+            for lib in lmg.get_all_libraries(repo):
+                try:
+                    if str(lib.title) == "Standard":
+                        libman.add_placeholder("Standard", lib)
+                        return True
+                except Exception:
+                    continue
+    except Exception:
+        pass
+    return False
+
+
+# ---------------------------------------------------------------------------
+# TON / TOF / TP 编译桩（Standard Library 不可用时的回退方案）
+# ---------------------------------------------------------------------------
+TIMER_STUBS = {
+    "TON": ("""FUNCTION_BLOCK TON
+VAR_INPUT
+    IN : BOOL;
+    PT : TIME;
+END_VAR
+VAR_OUTPUT
+    Q : BOOL;
+    ET : TIME;
+END_VAR""",
+"""(* Compile-only stub provided by the toolchain service. *)
+(* Real timer semantics are implemented by the sim backend (st_sim.py). *)
+Q := IN AND (ET >= PT);
+ET := T#0S;"""),
+    "TOF": ("""FUNCTION_BLOCK TOF
+VAR_INPUT
+    IN : BOOL;
+    PT : TIME;
+END_VAR
+VAR_OUTPUT
+    Q : BOOL;
+    ET : TIME;
+END_VAR""",
+"""(* Compile-only stub provided by the toolchain service. *)
+(* Real timer semantics are implemented by the sim backend (st_sim.py). *)
+Q := IN OR (ET < PT);
+ET := T#0S;"""),
+    "TP": ("""FUNCTION_BLOCK TP
+VAR_INPUT
+    IN : BOOL;
+    PT : TIME;
+END_VAR
+VAR_OUTPUT
+    Q : BOOL;
+    ET : TIME;
+END_VAR""",
+"""(* Compile-only stub provided by the toolchain service. *)
+(* Real timer semantics are implemented by the sim backend (st_sim.py). *)
+Q := FALSE;
+ET := T#0S;"""),
+}
+
+
+def ensure_timer_stubs(app):
+    """创建 TON/TOF/TP 编译桩（已存在则跳过）。"""
+    made = []
+    existing = set()
+    try:
+        for o in app.get_children(True):
+            try:
+                existing.add(str(o.get_name()).upper())
+            except Exception:
+                pass
+    except Exception:
+        pass
+    for name, (decl, impl) in TIMER_STUBS.items():
+        if name in existing:
+            continue
+        try:
+            stub = app.create_pou(name, PouType.FunctionBlock,
+                                  ImplementationLanguages.st)
+            stub.textual_declaration.replace(decl)
+            stub.textual_implementation.replace(impl)
+            made.append(name)
+        except Exception:
+            pass
+    return made
+
 
 def load_args():
     for a in reversed(sys.argv[1:]):
@@ -119,6 +243,27 @@ def main():
         task = tc.create_task("MainTask")
         task.pous.add("PLC_PRG")
         result["steps"]["task"] = "MainTask -> PLC_PRG"
+
+        # Standard Library：可用则引用真库；不可用回退到 TON/TOF/TP 编译桩
+        std_ok = ensure_standard_library(proj)
+        result["steps"]["standard_library"] = "referenced" if std_ok else "not found"
+        if not std_ok:
+            result["steps"]["timer_stubs"] = ensure_timer_stubs(app)
+        else:
+            # 旧模板里可能带着桩，清掉避免与真库的 TON/TOF/TP 重名
+            removed = []
+            for obj in proj.get_children(True):
+                try:
+                    nm = str(obj.get_name())
+                except Exception:
+                    continue
+                if nm in TIMER_STUBS:
+                    try:
+                        obj.delete()
+                        removed.append(nm)
+                    except Exception:
+                        pass
+            result["steps"]["timer_stubs_removed"] = removed
 
         system = globals().get("system")
         app.build()

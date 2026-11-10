@@ -1,0 +1,49 @@
+{
+  "task_id": "M05_ProdLine",
+  "title": "Automated Production Line Control",
+  "pou": "M05_ProdLine",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "Mode", "dir": "input", "type": "BOOL"},
+    {"name": "ForwardButton", "dir": "input", "type": "BOOL"},
+    {"name": "ReverseButton", "dir": "input", "type": "BOOL"},
+    {"name": "SensorA", "dir": "input", "type": "BOOL"},
+    {"name": "SensorB", "dir": "input", "type": "BOOL"},
+    {"name": "SensorC", "dir": "input", "type": "BOOL"},
+    {"name": "ButtonA", "dir": "input", "type": "BOOL"},
+    {"name": "ButtonB", "dir": "input", "type": "BOOL"},
+    {"name": "ButtonC", "dir": "input", "type": "BOOL"},
+    {"name": "MotorForward", "dir": "output", "type": "BOOL"},
+    {"name": "MotorReverse", "dir": "output", "type": "BOOL"},
+    {"name": "CompletionLight", "dir": "output", "type": "BOOL"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "manual interlock",
+      "coverage": "both buttons -> no motion",
+      "initial_state": "manual mode",
+      "steps": [
+        {"cycle": 0, "inputs": {"Mode": 0, "ForwardButton": 1, "ReverseButton": 0}, "expect": {"MotorForward": 1, "MotorReverse": 0}, "check": "forward only"},
+        {"cycle": 1, "inputs": {"Mode": 0, "ForwardButton": 1, "ReverseButton": 1}, "expect": {"MotorForward": 0, "MotorReverse": 0}, "check": "interlocked"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "automatic A->B->C sequence",
+      "coverage": "full automatic flow with completion light (PLC one-scan state latency)",
+      "initial_state": "auto mode, product at A",
+      "steps": [
+        {"cycle": 0, "inputs": {"Mode": 1, "SensorA": 1}, "expect": {"MotorForward": 0, "CompletionLight": 0}, "check": "waiting at A"},
+        {"cycle": 1, "inputs": {"Mode": 1, "SensorA": 1, "ButtonA": 1}, "expect": {"MotorForward": 0}, "check": "A confirmed this scan, step advances"},
+        {"cycle": 2, "inputs": {"Mode": 1, "SensorA": 1, "ButtonA": 0}, "expect": {"MotorForward": 1}, "check": "moving A->B"},
+        {"cycle": 3, "inputs": {"Mode": 1, "SensorA": 0, "SensorB": 1}, "expect": {"MotorForward": 0}, "check": "arrived B, motor stops"},
+        {"cycle": 4, "inputs": {"Mode": 1, "SensorB": 1, "ButtonB": 1}, "expect": {"MotorForward": 0}, "check": "B confirmed this scan"},
+        {"cycle": 5, "inputs": {"Mode": 1, "SensorB": 1, "ButtonB": 0}, "expect": {"MotorForward": 1}, "check": "moving B->C"},
+        {"cycle": 6, "inputs": {"Mode": 1, "SensorB": 0, "SensorC": 1}, "expect": {"MotorForward": 0, "CompletionLight": 0}, "check": "arrived C"},
+        {"cycle": 7, "inputs": {"Mode": 1, "SensorC": 1, "ButtonC": 1}, "expect": {"CompletionLight": 1}, "check": "C confirmed, light on"},
+        {"cycle": 8, "inputs": {"Mode": 1, "SensorC": 0, "ButtonC": 0}, "expect": {"CompletionLight": 0}, "check": "product removed, light off"}
+      ]
+    }
+  ]
+}

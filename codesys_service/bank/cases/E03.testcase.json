@@ -1,0 +1,52 @@
+{
+  "task_id": "E03_Hysteresis",
+  "title": "Alarm Handling",
+  "pou": "E03_Hysteresis",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "Value", "dir": "input", "type": "REAL"},
+    {"name": "hiLevel", "dir": "input", "type": "REAL"},
+    {"name": "loLevel", "dir": "input", "type": "REAL"},
+    {"name": "hystWindow", "dir": "input", "type": "REAL"},
+    {"name": "hiAlarm", "dir": "output", "type": "BOOL"},
+    {"name": "loAlarm", "dir": "output", "type": "BOOL"},
+    {"name": "error", "dir": "output", "type": "BOOL"},
+    {"name": "status", "dir": "output", "type": "WORD"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "hysteresis high alarm",
+      "coverage": "enter high alarm above hiLevel, exit below hiLevel-window",
+      "initial_state": "hiLevel=100, loLevel=20, hystWindow=5",
+      "steps": [
+        {"cycle": 0, "inputs": {"Value": 50.0, "hiLevel": 100.0, "loLevel": 20.0, "hystWindow": 5.0}, "expect": {"hiAlarm": 0, "loAlarm": 0, "error": 0, "status": 0}, "check": "normal zone"},
+        {"cycle": 1, "inputs": {"Value": 101.0}, "expect": {"hiAlarm": 1}, "check": "above hiLevel triggers high alarm"},
+        {"cycle": 2, "inputs": {"Value": 96.5}, "expect": {"hiAlarm": 1}, "check": "inside window, alarm held"},
+        {"cycle": 3, "inputs": {"Value": 94.9}, "expect": {"hiAlarm": 0}, "check": "below hiLevel-window, alarm exits"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "hysteresis low alarm",
+      "coverage": "enter low alarm below loLevel, exit above loLevel+window",
+      "initial_state": "hiLevel=100, loLevel=20, hystWindow=5",
+      "steps": [
+        {"cycle": 0, "inputs": {"Value": 50.0, "hiLevel": 100.0, "loLevel": 20.0, "hystWindow": 5.0}, "expect": {"loAlarm": 0}, "check": "normal"},
+        {"cycle": 1, "inputs": {"Value": 19.0}, "expect": {"loAlarm": 1}, "check": "below loLevel triggers low alarm"},
+        {"cycle": 2, "inputs": {"Value": 24.5}, "expect": {"loAlarm": 1}, "check": "inside window, alarm held"},
+        {"cycle": 3, "inputs": {"Value": 25.1}, "expect": {"loAlarm": 0}, "check": "above loLevel+window, alarm exits"}
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "configuration errors",
+      "coverage": "loLevel>=hiLevel -> 16#8001; oversized window -> 16#8002",
+      "initial_state": "all default",
+      "steps": [
+        {"cycle": 0, "inputs": {"Value": 50.0, "hiLevel": 10.0, "loLevel": 20.0, "hystWindow": 1.0}, "expect": {"error": 1, "status": 32769}, "check": "16#8001"},
+        {"cycle": 1, "inputs": {"Value": 50.0, "hiLevel": 100.0, "loLevel": 20.0, "hystWindow": 85.0}, "expect": {"error": 1, "status": 32770}, "check": "16#8002"}
+      ]
+    }
+  ]
+}

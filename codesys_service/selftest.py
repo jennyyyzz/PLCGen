@@ -164,6 +164,14 @@ def main(argv=None):
                   "--markdown", str(out6)], log)
     record("04 仿真执行（正确实现）", rc4, d4, out4, "预期 3/3 通过")
 
+    # 4b Standard Library 字符串函数回归
+    out4b = run_dir / "04b_tests_stdlib.json"
+    rc4b, d4b = sh([PY, str(HERE / "run_tests.py"),
+                    "--case", str(DEMO / "stdlib_strings.testcase.json"),
+                    "--st", str(DEMO / "stdlib_strings.st"),
+                    "--backend", "sim", "--out", str(out4b)], log)
+    record("04b Standard 字符串函数", rc4b, d4b, out4b, "预期 1/1 通过")
+
     # 5 仿真执行（有 bug 的实现）
     out5 = run_dir / "05_tests_bug.json"
     rc5, d5 = sh([PY, str(HERE / "run_tests.py"), "--case", str(CASE),
@@ -181,6 +189,7 @@ def main(argv=None):
     c2 = load(out2)
     t3 = load(out3)
     t4 = load(out4)
+    t4b = load(out4b)
     t5 = load(out5)
 
     summary["results"] = {
@@ -188,6 +197,7 @@ def main(argv=None):
         "compile": c2.get("summary"),
         "tests_dry": {"pass": t3.get("pass"), "total": t3.get("total")},
         "tests_sim": {"pass": t4.get("pass"), "total": t4.get("total")},
+        "tests_stdlib": {"pass": t4b.get("pass"), "total": t4b.get("total")},
         "tests_bug": {"pass": t5.get("pass"), "total": t5.get("total")},
     }
     summary["finished"] = datetime.now().isoformat(timespec="seconds")
@@ -200,6 +210,7 @@ def main(argv=None):
         c1.get("total") == exp_total and c1.get("passed") == exp_pass
         and t3.get("pass") == t3.get("total")
         and t4.get("pass") == t4.get("total")
+        and t4b.get("pass") == t4b.get("total")
         and t5.get("pass") == 2
     )
 
@@ -215,6 +226,7 @@ def main(argv=None):
         c2.get("summary", {}), ensure_ascii=False))
     tee(log, "  用例结构   : %s/%s 合法" % (t3.get("pass"), t3.get("total")))
     tee(log, "  仿真(正确) : %s/%s 通过" % (t4.get("pass"), t4.get("total")))
+    tee(log, "  Standard   : %s/%s 通过" % (t4b.get("pass"), t4b.get("total")))
     tee(log, "  仿真(缺陷) : %s/%s 通过" % (t5.get("pass"), t5.get("total")))
     tee(log, "  符合预期   : %s" % ("是" if summary["all_expected"] else "否"))
     tee(log, "  产物目录   : %s" % run_dir)

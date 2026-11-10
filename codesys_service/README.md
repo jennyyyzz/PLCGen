@@ -81,8 +81,7 @@ duplicate declarations, etc.). Results in ~20ms — saves a whole compile round.
 
 ```json
 {
-  "st_code": "PROGRAM PLC_PRG\n...",
-  "pou": "PLC_PRG",
+  "st_code": "FUNCTION_BLOCK FB_Q03\nVAR_INPUT\n...\nEND_FUNCTION_BLOCK",
   "backend": "auto",
   "timeout": 900
 }
@@ -90,7 +89,32 @@ duplicate declarations, etc.). Results in ~20ms — saves a whole compile round.
 
 - `backend`: `auto` (default — real compile if CODESYS is available on the host,
   otherwise degrades to a static check) / `codesys` / `lint`
-- `pou`: defaults to `PLC_PRG`; only pass it if your ST uses a different POU name
+- `pou`: **optional**. Omit it and the service uses the name written in your code
+  (`PROGRAM PLC_PRG` → `PLC_PRG`, `FUNCTION_BLOCK FB_Q03` → `FB_Q03`).
+  Only pass it to force a different object name (the header gets renamed to match).
+- `PROGRAM`, `FUNCTION_BLOCK` and `FUNCTION` are all supported. FB/function bodies
+  are compiled through an auto-generated wrapper program (see the response's
+  `entry` field), because CODESYS only type-checks code reachable from a task.
+- `TYPE ... END_TYPE` blocks are extracted from the ST and created as separate
+  DUT objects automatically (they must be their own objects in CODESYS; the
+  response's `api.duts` field records what was created).
+- `TON` / `TOF` / `TP` and the string functions (`LEN`, `MID`, `LEFT`,
+  `RIGHT`, `CONCAT`, `INSERT`, `DELETE`, `REPLACE`, `FIND`) come from the
+  CODESYS **Standard Library**
+  (`Managed Libraries/System/Standard`). The template references it as a
+  placeholder; every compile session verifies the reference and re-adds it
+  if necessary. Old compile-only timer stubs are removed automatically.
+- `/api/compile` reports the resolved state in `stdlib`
+  (`{"status": "already"|"added"|"missing", "removed_stubs": [...]}`).
+  If Standard cannot be resolved, the response says `status: "missing"` and
+  appends an explanatory hint to `errors`; in that fallback only TON/TOF/TP
+  stubs may exist and string functions stay unavailable.
+- Do **not** name a variable `LEN`, `MID`, `LEFT`, ... (or `ABS`, `MIN`,
+  `MAX`, ...). CODESYS identifiers are case-insensitive, so the static check
+  reports `E007` (reserved identifier) or `E008` (variable shadows a Standard
+  Library function) before compilation.
+- Assign string-function results to a sized string, e.g. `sOut : STRING(80);`.
+  A bare `STRING` target is rejected by CODESYS as an implicit type conversion.
 
 **Response**
 
@@ -99,9 +123,14 @@ duplicate declarations, etc.). Results in ~20ms — saves a whole compile round.
   "ok": true,
   "result": "PASS",
   "stage": "codesys",
+  "pou": "FB_Q03",
+  "pou_kind": "FunctionBlock",
+  "entry": "PLC_PRG",
+  "wrapper": "wrapInst();",
   "errors": [],
   "warnings": [],
   "duration_s": 1.8,
+  "stdlib": {"status": "already", "removed_stubs": []},
   "st_source": "..."
 }
 ```
@@ -119,7 +148,26 @@ text plus a re-read of the code.
     cases are declared in the ST and types match). **Run this first whenever you
     finish writing a case file.**
   - `sim`: offline simulation — actually executes the ST logic scan-cycle by
-    scan-cycle (no PLC needed on the host)
+    scan-cycle (no PLC needed on the host). Supported subset:
+    based literals (`16#8001`, `2#1010_1011`, `8#17`, `10#12`), typed
+    literals (`INT#16#80`, `DINT#-5`, `BOOL#1`), time literals (`T#5S`,
+    `T#500MS`, `TIME#1S2MS` — resolved to milliseconds), timer function
+    blocks **TON / TOF / TP** (declare as `t : TON;`, call `t(IN:=x,
+    PT:=T#5S);`, read `t.Q` / `t.ET`), array variables with indexed
+    read/write (`a : ARRAY[0..9] OF INT;` … `a[3] := 5;`), **VAR
+    initializers** (`idx : INT := 1;` — constant expressions are applied
+    at reset), conversion functions (`INT_TO_REAL`, `TO_STRING`, …),
+    `ABS`/`MIN`/`MAX`/`LIMIT`/`SEL`, `FOR ... TO ... BY ... DO` loops with
+    `EXIT`/`CONTINUE`, and STRING values (literals, 1-based indexing,
+    `LEN`/`LEFT`/`RIGHT`/`MID`/`CONCAT`/`INSERT`/`DELETE`/`REPLACE`/`FIND`;
+    `TRIM`/`UPPER`/`LOWER` are sim-only extras, not part of CODESYS Standard).
+    `AND`/`OR`/`XOR`/`NOT` on integers are bitwise, per ST semantics. If the
+    interpreter hits something it cannot parse, every case is reported as
+    `NOT_RUN` with the reason in `diff`.
+  - Timer cases: add a `hold_ms` field to a step to keep scanning (without
+    touching inputs) until that many milliseconds of simulated time have
+    passed before checking `expect` — e.g. for a `PT=T#3S` TON, set
+    `"hold_ms": 3000` and `expect` `Q=1, ET=3000` on that step.
   - `ads`: connects to a real CODESYS Control Win runtime (requires `ams` / `port`
     parameters, provided by the person hosting the service)
 - Test cases are embedded directly in the `cases` field, following the course's
@@ -318,7 +366,10 @@ Prerequisites:
 | ------------------------------------------------ | ------------------------------------------------------------------ |
 | Cannot reach `/health`                           | Service not started, or firewall blocks the port; contact the host |
 | Compile spins until timeout                      | CODESYS `--noUI` mode blocked by a license/update popup — host checks the taskbar, closes the popup, retry |
-| Compile says `result: PASS` but tests `NOT_RUN`  | The `sim` backend does not support CASE/FOR/timer statements — expected behavior (it never fakes a pass) |
+| Compile errors like `undefined identifier 'LEN'`  | Standard Library was not resolved. Check `stdlib` in the `/api/compile` response; install Standard under `Managed Libraries/System/Standard` and regenerate the template. |
+| `E007` / `E008` in the static check | A variable name equals a CODESYS reserved/built-in identifier (`E007`) or shadows a Standard Library function that is called in the code (`E008`). Rename the variable. |
+| Weird errors like `unexpected token 's'`         | A variable is named `S` or `R` — reserved set/reset instruction keywords in ST (case-insensitive). The static check reports this as `E006` before compilation. |
+| Tests `NOT_RUN` with a parse reason in `diff`    | The `sim` interpreter hit syntax outside its supported subset (it never fakes a pass) |
 | Want to know why a request was slow              | `GET /api/jobs` shows duration and outcome of the last 200 requests |
 | Public URL suddenly unreachable                  | Host machine offline/sleeping, or service was restarted — a new URL was issued; get the fresh one from the host |
 
@@ -331,3 +382,10 @@ Prerequisites:
 | Compile time                    | `duration_s` (CODESYS compile only, excluding project open)           |
 | Test pass rate                  | `pass_rate` (in `/api/tests` or `/api/pipeline` responses)            |
 | Share caught by the static check| Proportion of tasks with `result=STATIC_FAIL` in `pipeline` responses (worth a separate column in the report) |
+
+## 7. Question-Bank Regression Assets
+
+`codesys_service/bank/` holds reference ST implementations for all 20
+public-bank tasks plus sim test cases for 12 of them — the regression
+baseline for the toolchain (20/20 lint, 20/20 CODESYS compile, 25/25 sim
+cases as of 2026-11-10). See `bank/README.md` for rerun commands.

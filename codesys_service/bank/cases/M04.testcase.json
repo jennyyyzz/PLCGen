@@ -1,0 +1,48 @@
+{
+  "task_id": "M04_TempCtrl",
+  "title": "Temperature Logic Control",
+  "pou": "M04_TempCtrl",
+  "scan_ms": 100,
+  "interface": [
+    {"name": "TemperatureSensorInput", "dir": "input", "type": "REAL"},
+    {"name": "SetTemperature", "dir": "input", "type": "REAL"},
+    {"name": "CurrentTemperature", "dir": "output", "type": "REAL"},
+    {"name": "SetTempDisplay", "dir": "output", "type": "REAL"},
+    {"name": "HeaterStatus", "dir": "output", "type": "BOOL"},
+    {"name": "OverheatProtection", "dir": "output", "type": "BOOL"},
+    {"name": "HeaterOutput", "dir": "output", "type": "BOOL"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "heater on/off by setpoint",
+      "coverage": "basic bang-bang control",
+      "initial_state": "set 50",
+      "steps": [
+        {"cycle": 0, "inputs": {"TemperatureSensorInput": 25.0, "SetTemperature": 50.0}, "expect": {"HeaterOutput": 1, "HeaterStatus": 1, "CurrentTemperature": 25.0, "SetTempDisplay": 50.0}, "check": "below setpoint heats"},
+        {"cycle": 1, "inputs": {"TemperatureSensorInput": 55.0, "SetTemperature": 50.0}, "expect": {"HeaterOutput": 0}, "check": "above setpoint stops"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "overheat protection after 5s and release after 3s",
+      "coverage": "5s continuous heat -> protect; 3s pause -> release",
+      "initial_state": "set 50, temp 25 (always cold)",
+      "steps": [
+        {"cycle": 0, "inputs": {"TemperatureSensorInput": 25.0, "SetTemperature": 50.0}, "expect": {"HeaterOutput": 1, "OverheatProtection": 0}, "check": "heating"},
+        {"cycle": 1, "inputs": {"TemperatureSensorInput": 25.0, "SetTemperature": 50.0}, "hold_ms": 5000, "expect": {"HeaterOutput": 0, "OverheatProtection": 1}, "check": "5s continuous -> protection"},
+        {"cycle": 2, "inputs": {"TemperatureSensorInput": 25.0, "SetTemperature": 50.0}, "hold_ms": 3100, "expect": {"OverheatProtection": 0, "HeaterOutput": 1}, "check": "3s pause -> protection lifted, heating again"}
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "sensor fault",
+      "coverage": "out-of-range sensor value forces heater off",
+      "initial_state": "default",
+      "steps": [
+        {"cycle": 0, "inputs": {"TemperatureSensorInput": 25.0, "SetTemperature": 50.0}, "expect": {"HeaterOutput": 1}, "check": "heating normally"},
+        {"cycle": 1, "inputs": {"TemperatureSensorInput": 150.0, "SetTemperature": 50.0}, "expect": {"HeaterOutput": 0}, "check": "sensor >100 -> heater off"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "task_id": "stdlib_strings",
+  "title": "CODESYS Standard Library string functions",
+  "pou": "StdlibStrings",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "textA", "dir": "input", "type": "STRING(80)"},
+    {"name": "textB", "dir": "input", "type": "STRING(80)"},
+    {"name": "n", "dir": "output", "type": "INT"},
+    {"name": "midOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "leftOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "rightOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "concatOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "insertOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "deleteOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "replaceOut", "dir": "output", "type": "STRING(80)"},
+    {"name": "findPos", "dir": "output", "type": "INT"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "LEN / MID / LEFT / RIGHT / CONCAT / INSERT / DELETE / REPLACE / FIND",
+      "coverage": "all Standard string functions with 1-based positions",
+      "initial_state": "textA=Hello, textB=World",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {"textA": "Hello", "textB": "World"},
+          "expect": {
+            "n": 5,
+            "midOut": "el",
+            "leftOut": "Hel",
+            "rightOut": "llo",
+            "concatOut": "HelloWorld",
+            "insertOut": "HeXYllo",
+            "deleteOut": "Hlo",
+            "replaceOut": "HXYlo",
+            "findPos": 3
+          },
+          "check": "Standard Library string semantics"
+        }
+      ]
+    }
+  ]
+}

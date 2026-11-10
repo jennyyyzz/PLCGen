@@ -1,0 +1,75 @@
+{
+  "task_id": "M08_IPv4",
+  "title": "IPv4 Parsing with Format and Range Checks",
+  "pou": "M08_IPv4",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "ipText", "dir": "input", "type": "STRING(254)"},
+    {"name": "ipValue", "dir": "output", "type": "UDINT"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "valid address",
+      "coverage": "four segments, network byte order",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "192.168.1.10"}, "expect": {"ipValue": 3232235786}, "check": "0xC0A8010A"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "maximum address",
+      "coverage": "255 range boundary",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "255.255.255.255"}, "expect": {"ipValue": 4294967295}, "check": "0xFFFFFFFF"}
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "zero address",
+      "coverage": "valid 0.0.0.0 also parses to 0",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "0.0.0.0"}, "expect": {"ipValue": 0}, "check": "valid zero"}
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "wrong segment count",
+      "coverage": "three segments rejected",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "1.2.3"}, "expect": {"ipValue": 0}, "check": "count != 4"}
+      ]
+    },
+    {
+      "id": "TC05",
+      "name": "out of range segment",
+      "coverage": "256 rejected",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "256.1.1.1"}, "expect": {"ipValue": 0}, "check": "segment > 255"}
+      ]
+    },
+    {
+      "id": "TC06",
+      "name": "non-digit segment",
+      "coverage": "letter rejected",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "1.2.3.x"}, "expect": {"ipValue": 0}, "check": "non-digit"}
+      ]
+    },
+    {
+      "id": "TC07",
+      "name": "empty segment",
+      "coverage": "double dot rejected",
+      "initial_state": "ipText empty",
+      "steps": [
+        {"cycle": 0, "inputs": {"ipText": "1..2.3"}, "expect": {"ipValue": 0}, "check": "empty segment"}
+      ]
+    }
+  ]
+}

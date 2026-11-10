@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -25,10 +26,18 @@ HERE = Path(__file__).resolve().parent
 PY = sys.executable
 
 
+def _child_env() -> dict:
+    """子进程强制 UTF-8 输出：避免宿主机 locale（cp936 等）导致中文乱码。"""
+    env = dict(os.environ)
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
+    return env
+
+
 def _run(cmd: list[str], timeout: int) -> tuple[int, str, str]:
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
-                           encoding="utf-8", errors="replace")
+                           encoding="utf-8", errors="replace", env=_child_env())
         return p.returncode, p.stdout, p.stderr
     except subprocess.TimeoutExpired:
         return -1, "", "timeout after %ss" % timeout
@@ -56,15 +65,20 @@ def lint_text(text: str) -> dict:
                 "warnings": res.get("warnings", [])}
 
 
-def compile_st(st_path: str, pou: str = "PLC_PRG", project: str | None = None,
+def compile_st(st_path: str, pou: str | None = None, project: str | None = None,
                backend: str = "auto", timeout: int = 900,
                profile: str | None = None) -> dict:
-    """编译单个 ST 文件，返回结构化结果。"""
+    """编译单个 ST 文件，返回结构化结果。
+
+    pou 省略时用 ST 代码里声明的名字（FUNCTION_BLOCK FB_Q03 -> FB_Q03）。
+    """
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "compile.json"
         cmd = [PY, str(HERE / "codesys_compile.py"), "--st", str(st_path),
-               "--pou", pou, "--backend", backend, "--out", str(out),
+               "--backend", backend, "--out", str(out),
                "--timeout", str(timeout)]
+        if pou:
+            cmd += ["--pou", pou]
         if project:
             cmd += ["--project", str(project)]
         if profile:
@@ -72,14 +86,20 @@ def compile_st(st_path: str, pou: str = "PLC_PRG", project: str | None = None,
         rc, so, se = _run(cmd, timeout + 60)
         data = _load(out, {"items": [], "summary": {}})
         item = (data.get("items") or [{}])[0]
+        api = item.get("api") or {}
         return {
             "ok": bool(item.get("ok")),
             "result": item.get("result"),
             "stage": item.get("stage"),
+            "pou": item.get("pou"),
+            "pou_kind": api.get("kind"),
+            "entry": api.get("entry"),
+            "wrapper": (api.get("wrapper") or {}).get("impl"),
             "errors": item.get("errors", []),
             "warnings": item.get("warnings", []),
             "duration_s": item.get("duration_s", 0),
             "env": data.get("env", {}),
+            "stdlib": data.get("stdlib"),
             "raw_stdout": so[-1500:],
             "raw_stderr": se[-1500:],
         }

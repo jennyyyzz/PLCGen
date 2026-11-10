@@ -40,3 +40,6 @@ codesys_service/cloudflared*.exe
 *.autosave
 *.backup
 *.project~
+*.opt
+*.precompilecache
+.workbuddy/

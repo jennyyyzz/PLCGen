@@ -117,7 +117,10 @@ class LintRequest(BaseModel):
 class CompileRequest(BaseModel):
     st_code: str | None = Field(None, description="ST source text (or use st_path)")
     st_path: str | None = Field(None, description="Host-local path to an .st file")
-    pou: str = Field("PLC_PRG", description="POU name the ST code belongs to")
+    pou: str | None = Field(
+        None,
+        description="POU name; omit to use the name declared in the ST code. "
+                    "PROGRAM / FUNCTION_BLOCK / FUNCTION are all supported.")
     backend: str = Field("auto", description="auto / codesys / lint")
     project: str | None = Field(None, description="Template project path (default: service config)")
     timeout: int = Field(900, ge=10, le=3600, description="Compile timeout in seconds")
@@ -140,7 +143,10 @@ class PipelineRequest(BaseModel):
     st_path: str | None = Field(None, description="Host-local path to an .st file")
     cases: dict | list | None = Field(None, description="Test case JSON (optional)")
     case_path: str | None = Field(None, description="Host-local test case path (optional)")
-    pou: str = Field("PLC_PRG", description="POU name the ST code belongs to")
+    pou: str | None = Field(
+        None,
+        description="POU name; omit to use the name declared in the ST code. "
+                    "PROGRAM / FUNCTION_BLOCK / FUNCTION are all supported.")
     compile_backend: str = Field("auto", description="auto / codesys / lint")
     test_backend: str = Field("sim", description="dry / sim / ads (only used when cases are provided)")
     project: str | None = Field(None, description="Template project path (default: service config)")
@@ -223,8 +229,12 @@ def _run_tests_cli(case: str, st: str | None, backend: str,
         if port:
             cmd += ["--port", str(port)]
         try:
+            import os as _os
+            env = dict(_os.environ)
+            env["PYTHONIOENCODING"] = "utf-8"
+            env["PYTHONUTF8"] = "1"
             p = subprocess.run(cmd, capture_output=True, text=True, timeout=600,
-                               encoding="utf-8", errors="replace")
+                               encoding="utf-8", errors="replace", env=env)
         except subprocess.TimeoutExpired:
             return {"total": 0, "pass": 0, "pass_rate": 0.0,
                     "results": [], "fatal": "test timeout after 600s"}
@@ -389,6 +399,9 @@ def api_pipeline(req: PipelineRequest) -> dict:
                 backend=req.compile_backend, timeout=req.timeout,
                 profile=CFG["profile"])
         out["steps"]["compile"] = {"ok": comp["ok"], "result": comp.get("result"),
+                                   "pou": comp.get("pou"),
+                                   "pou_kind": comp.get("pou_kind"),
+                                   "entry": comp.get("entry"),
                                    "errors": comp.get("errors", []),
                                    "duration_s": comp.get("duration_s", 0)}
         out["duration_s"] = comp.get("duration_s", 0)

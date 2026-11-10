@@ -10,6 +10,7 @@
   E003 单引号不配对
   E004 语句位置误用 `=`（应为 `:=`）
   E005 变量重复声明
+  E006 变量名 S/R 撞上置位/复位指令关键字（CODESYS 必然编译失败）
   W101 标识符未声明
   W102 疑似缺少分号
 
@@ -94,9 +95,26 @@ BUILTINS = {
     "MID", "CONCAT", "INSERT", "DELETE", "REPLACE", "FIND",
 }
 
+# CODESYS 编译器保留标识符：即使只声明为变量也会报「发现非预期的记号」
+# （实测 3.5.22：abs/add/sub/mul/div/min/max/limit/sel/move 均不可作变量名）
+RESERVED_NAMES = {
+    "ABS", "ADD", "SUB", "MUL", "DIV", "MOD", "SEL", "MUX", "LIMIT",
+    "MIN", "MAX", "MOVE", "SHL", "SHR", "ROL", "ROR", "EXPT", "SQRT",
+    "LN", "LOG", "EXP", "SIN", "COS", "TAN", "ASIN", "ACOS", "ATAN",
+    "ATAN2", "TRUNC", "ROUND", "CEIL", "FLOOR",
+}
+
+# Standard Library 里可按名字调用的函数：变量同名且代码里又调用它时，
+# 变量会遮蔽函数（CODESYS 报「需要程序名、函数或功能块实例替代 'MID'」）
+CALLABLE_LIB = {
+    "LEN", "LEFT", "RIGHT", "MID", "CONCAT", "INSERT", "DELETE",
+    "REPLACE", "FIND",
+}
+
 IDENT_RE = re.compile(r"[A-Za-z_]\w*")
 ADDR_RE = re.compile(r"%[IQM][XBWDL]?\d+(?:\.\d+)*", re.I)
 TYPED_LITERAL_RE = re.compile(r"\b[A-Za-z_]\w*#[^\s;,)]*")
+BASED_LITERAL_RE = re.compile(r"\b\d{1,2}#[0-9A-Fa-f_]+")
 DURATION_RE = re.compile(r"\b\d+(?:\.\d+)?(?:ms|us|ns|s|m|h|d)\b", re.I)
 
 # 语句位置出现 `=`（而非 `:=`）——ST 里赋值必须用 `:=`
@@ -287,7 +305,11 @@ DECL_RE = re.compile(
 
 
 def collect_declarations(text: str, rep: Report):
-    """返回 (已声明名集合, 类型名集合)。"""
+    """返回 (已声明名集合, 类型名集合)。
+
+    已声明名集合的值是 (变量名, 行号, 类型文本, 初始化表达式文本或 None)；
+    前三位含义与旧版一致（按位置取 v[2] 的调用方不受影响）。
+    """
     declared = {}
     types = set()
     in_var = False
@@ -306,6 +328,10 @@ def collect_declarations(text: str, rep: Report):
             continue
         if first == "TYPE":
             in_type = True
+            # TYPE 名本身是合法类型名（TYPE ST_Pump : STRUCT ...）
+            tm = re.match(r"^TYPE\s+([A-Za-z_]\w*)\s*:", s, re.I)
+            if tm:
+                types.add(tm.group(1).upper())
             continue
         if first == "END_TYPE":
             in_type = False
@@ -324,11 +350,36 @@ def collect_declarations(text: str, rep: Report):
         types.add(type_txt.split("(")[0].strip().upper())
         for name in [x.strip() for x in m.group(1).split(",")]:
             key = name.upper()
+            init_txt = (m.group(3) or "").strip() or None
+            if key in ("S", "R"):
+                # 实测（CODESYS 3.5.22）：S/R 是 ST 的置位/复位指令关键字且大小写
+                # 不敏感，声明 `s : BOOL;` 会让编译器报一串「发现非预期的记号」，
+                # 学生根本看不出是变量名撞了关键字，所以在 lint 层直接拦截。
+                rep.err(i, "E006",
+                        f"变量名 {name} 不可用：S/R 是置位/复位指令关键字"
+                        f"（大小写不敏感），CODESYS 编译必然报"
+                        f"「发现非预期的记号'{name}'」，请改名（如 {name}→{name}1）")
+            elif key in RESERVED_NAMES:
+                rep.err(i, "E007",
+                        f"变量名 {name} 是 CODESYS 保留字/内置函数名，不能用作变量名，"
+                        f"请改名（如 {name}→{name}1）")
             if key in declared:
                 rep.err(i, "E005", f"变量 {name} 重复声明（首次在第 {declared[key][1]} 行）")
             else:
-                declared[key] = (name, i, type_txt)
+                declared[key] = (name, i, type_txt, init_txt)
     return declared, types
+
+
+def check_stdlib_shadowing(text: str, declared, rep: Report):
+    """变量名与 Standard Library 函数同名、且代码里又调用该函数时提前拦截。"""
+    for key, (name, line, _type, _init) in declared.items():
+        if key not in CALLABLE_LIB:
+            continue
+        if re.search(r"\b%s\s*\(" % re.escape(key), text, re.I):
+            rep.err(line, "E008",
+                    f"变量 {name} 与 Standard Library 函数 {key} 同名，"
+                    f"调用 {key}(...) 时会被变量遮蔽，CODESYS 编译失败；"
+                    f"请给变量改名（如 {name}→{name}Val）")
 
 
 def check_undeclared(text: str, declared, types, rep: Report):
@@ -338,6 +389,7 @@ def check_undeclared(text: str, declared, types, rep: Report):
     scan = re.sub(r"'[^']*'", "''", text)
     scan = ADDR_RE.sub(" ", scan)
     scan = TYPED_LITERAL_RE.sub(" ", scan)
+    scan = BASED_LITERAL_RE.sub(" ", scan)  # 16#8001 / 2#0000_0101 不是标识符
     scan = DURATION_RE.sub(" ", scan)
     # POU 头后面的名字（PROGRAM PLC_PRG 里的 PLC_PRG）是块名，不是变量
     scan = re.sub(
@@ -346,6 +398,9 @@ def check_undeclared(text: str, declared, types, rep: Report):
         " ",
         scan,
     )
+    # fbcall 命名参数（t(IN:=x, PT:=T#5S) 里的 IN/PT）不是未声明标识符：
+    # 只擦「( 或 , 之后紧跟 标识符 := 」的形参名，普通赋值不受影响
+    scan = re.sub(r"([({,]\s*)([A-Za-z_]\w*)(\s*:=)", r"\1\3", scan)
 
     for m in IDENT_RE.finditer(scan):
         name = m.group(0)
@@ -405,6 +460,7 @@ def lint_source(text: str, path: str = "<string>", strict: bool = False) -> dict
     check_parens(clean, rep)
     check_blocks(clean, rep)
     declared, types = collect_declarations(clean, rep)
+    check_stdlib_shadowing(clean, declared, rep)
     check_undeclared(clean, declared, types, rep)
     check_assign_misuse(clean, rep)
     check_semicolon(clean, rep)

@@ -1,0 +1,65 @@
+{
+  "task_id": "H06_Production",
+  "title": "Production Control",
+  "pou": "H06_Production",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "Mode", "dir": "input", "type": "BOOL"},
+    {"name": "ForwardButton", "dir": "input", "type": "BOOL"},
+    {"name": "ReverseButton", "dir": "input", "type": "BOOL"},
+    {"name": "SensorFeed", "dir": "input", "type": "BOOL"},
+    {"name": "SensorWash", "dir": "input", "type": "BOOL"},
+    {"name": "SensorWeight", "dir": "input", "type": "BOOL"},
+    {"name": "SensorFiring", "dir": "input", "type": "BOOL"},
+    {"name": "SensorOutput", "dir": "input", "type": "BOOL"},
+    {"name": "washComplete", "dir": "input", "type": "BOOL"},
+    {"name": "weightComplete", "dir": "input", "type": "BOOL"},
+    {"name": "weight", "dir": "input", "type": "REAL"},
+    {"name": "firingComplete", "dir": "input", "type": "BOOL"},
+    {"name": "MotorForward", "dir": "output", "type": "BOOL"},
+    {"name": "MotorReverse", "dir": "output", "type": "BOOL"},
+    {"name": "kick", "dir": "output", "type": "BOOL"},
+    {"name": "CompletionLight", "dir": "output", "type": "BOOL"},
+    {"name": "firingTemp", "dir": "output", "type": "REAL"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "qualified material reaches output",
+      "coverage": "full pass: feed->wash->weigh(150kg)->fire->output, temp mapping (one-scan state latency)",
+      "initial_state": "auto mode, material at feed",
+      "steps": [
+        {"cycle": 0, "inputs": {"Mode": 1, "SensorFeed": 1}, "expect": {"MotorForward": 0}, "check": "waiting at feed"},
+        {"cycle": 1, "inputs": {"Mode": 1, "SensorFeed": 1}, "expect": {"MotorForward": 1}, "check": "SensorFeed level advanced step at cycle 0, already moving"},
+        {"cycle": 2, "inputs": {"Mode": 1, "SensorFeed": 1}, "expect": {"MotorForward": 1}, "check": "moving to wash"},
+        {"cycle": 3, "inputs": {"Mode": 1, "SensorFeed": 0, "SensorWash": 1}, "expect": {"MotorForward": 0}, "check": "at wash, motor stops"},
+        {"cycle": 4, "inputs": {"Mode": 1, "SensorWash": 1, "washComplete": 1}, "expect": {"MotorForward": 0}, "check": "wash done, step advances"},
+        {"cycle": 5, "inputs": {"Mode": 1, "SensorWash": 1, "washComplete": 0}, "expect": {"MotorForward": 1}, "check": "moving to weighing"},
+        {"cycle": 6, "inputs": {"Mode": 1, "SensorWash": 0, "SensorWeight": 1}, "expect": {"MotorForward": 0}, "check": "at weighing"},
+        {"cycle": 7, "inputs": {"Mode": 1, "SensorWeight": 1, "weightComplete": 1, "weight": 150.0}, "expect": {"kick": 0, "firingTemp": 525.0, "MotorForward": 0}, "check": "qualified: 150kg -> 525 deg, step advances"},
+        {"cycle": 8, "inputs": {"Mode": 1, "SensorWeight": 1, "weightComplete": 0}, "expect": {"MotorForward": 1}, "check": "moving to firing"},
+        {"cycle": 9, "inputs": {"Mode": 1, "SensorWeight": 0, "SensorFiring": 1}, "expect": {"MotorForward": 0}, "check": "at firing"},
+        {"cycle": 10, "inputs": {"Mode": 1, "SensorFiring": 1, "firingComplete": 1}, "expect": {"MotorForward": 0}, "check": "firing done, step advances"},
+        {"cycle": 11, "inputs": {"Mode": 1, "SensorFiring": 1, "firingComplete": 0}, "expect": {"MotorForward": 1}, "check": "moving out"},
+        {"cycle": 12, "inputs": {"Mode": 1, "SensorFiring": 0, "SensorOutput": 1}, "expect": {"MotorForward": 0, "CompletionLight": 0}, "check": "at output, light next scan"},
+        {"cycle": 13, "inputs": {"Mode": 1, "SensorOutput": 1}, "expect": {"CompletionLight": 1}, "check": "light on"},
+        {"cycle": 14, "inputs": {"Mode": 1, "SensorOutput": 0}, "expect": {"CompletionLight": 0}, "check": "product taken, light off"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "underweight material kicked",
+      "coverage": "weight below 100 -> reject",
+      "initial_state": "auto mode",
+      "steps": [
+        {"cycle": 0, "inputs": {"Mode": 1, "SensorFeed": 1}, "expect": {"MotorForward": 0}, "check": "idle"},
+        {"cycle": 1, "inputs": {"Mode": 1, "SensorFeed": 1}, "expect": {"MotorForward": 1}, "check": "moving"},
+        {"cycle": 2, "inputs": {"Mode": 1, "SensorWash": 1, "SensorFeed": 0}, "expect": {"MotorForward": 0}, "check": "at wash"},
+        {"cycle": 3, "inputs": {"Mode": 1, "SensorWash": 1, "washComplete": 1}, "expect": {"MotorForward": 0}, "check": "step advances"},
+        {"cycle": 4, "inputs": {"Mode": 1, "SensorWash": 1, "washComplete": 0}, "expect": {"MotorForward": 1}, "check": "moving"},
+        {"cycle": 5, "inputs": {"Mode": 1, "SensorWeight": 1, "SensorWash": 0}, "expect": {"MotorForward": 0}, "check": "at weighing"},
+        {"cycle": 6, "inputs": {"Mode": 1, "SensorWeight": 1, "weightComplete": 1, "weight": 90.0}, "expect": {"kick": 1, "MotorForward": 0}, "check": "90kg unqualified -> kick"}
+      ]
+    }
+  ]
+}

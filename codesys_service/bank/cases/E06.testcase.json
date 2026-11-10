@@ -1,0 +1,29 @@
+{
+  "task_id": "E06_Blower",
+  "title": "Aeration Blower Delayed Start",
+  "pou": "E06_Blower",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "DO_LOW", "dir": "input", "type": "BOOL", "desc": "low DO demand"},
+    {"name": "AERATION_E_STOP_NC", "dir": "input", "type": "BOOL", "desc": "e-stop inactive"},
+    {"name": "BLOWER_RUN", "dir": "output", "type": "BOOL", "desc": "blower run"},
+    {"name": "AERATION_BLOWER_CYCLE_COUNT", "dir": "output", "type": "UINT", "desc": "start count"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "5s delayed start, immediate stop, re-wait",
+      "coverage": "delay timing, run after 5s, reset on demand loss, cycle count",
+      "initial_state": "all inputs FALSE",
+      "steps": [
+        {"cycle": 0, "inputs": {"DO_LOW": 0, "AERATION_E_STOP_NC": 1}, "expect": {"BLOWER_RUN": 0, "AERATION_BLOWER_CYCLE_COUNT": 0}, "check": "no demand, blower off"},
+        {"cycle": 1, "inputs": {"DO_LOW": 1, "AERATION_E_STOP_NC": 1}, "expect": {"BLOWER_RUN": 0}, "check": "timing starts, not yet running"},
+        {"cycle": 2, "inputs": {"DO_LOW": 1, "AERATION_E_STOP_NC": 1}, "hold_ms": 5000, "expect": {"BLOWER_RUN": 1, "AERATION_BLOWER_CYCLE_COUNT": 1}, "check": "runs after full 5s, counted once"},
+        {"cycle": 3, "inputs": {"DO_LOW": 0, "AERATION_E_STOP_NC": 1}, "expect": {"BLOWER_RUN": 0}, "check": "demand loss stops immediately"},
+        {"cycle": 4, "inputs": {"DO_LOW": 1, "AERATION_E_STOP_NC": 1}, "hold_ms": 4980, "expect": {"BLOWER_RUN": 0}, "check": "re-wait: not yet 5s again"},
+        {"cycle": 5, "inputs": {"DO_LOW": 1, "AERATION_E_STOP_NC": 1}, "hold_ms": 5000, "expect": {"BLOWER_RUN": 1, "AERATION_BLOWER_CYCLE_COUNT": 2}, "check": "second start counted"},
+        {"cycle": 6, "inputs": {"DO_LOW": 1, "AERATION_E_STOP_NC": 0}, "expect": {"BLOWER_RUN": 0}, "check": "e-stop immediate off"}
+      ]
+    }
+  ]
+}

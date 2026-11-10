@@ -1,0 +1,32 @@
+{
+  "task_id": "M07_HVAC",
+  "title": "Office HVAC Multi-mode Energy-Saving Control",
+  "pou": "M07_HVAC",
+  "scan_ms": 100,
+  "interface": [
+    {"name": "OCCUPANCY_DETECTED", "dir": "input", "type": "BOOL"},
+    {"name": "ENERGY_SAVING_MODE", "dir": "input", "type": "BOOL"},
+    {"name": "HVAC_MODE_SELECTOR", "dir": "input", "type": "INT"},
+    {"name": "SUPPLY_FAN_RUN", "dir": "output", "type": "BOOL"},
+    {"name": "TEMP_SETPOINT_ADJUST", "dir": "output", "type": "INT"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "30s fan delay and setpoint table",
+      "coverage": "delay, reset on night mode, all four modes",
+      "initial_state": "auto mode, occupied, no energy saving",
+      "steps": [
+        {"cycle": 0, "inputs": {"OCCUPANCY_DETECTED": 1, "ENERGY_SAVING_MODE": 0, "HVAC_MODE_SELECTOR": 0}, "expect": {"SUPPLY_FAN_RUN": 0, "TEMP_SETPOINT_ADJUST": 0}, "check": "occupied auto = 0, fan timing"},
+        {"cycle": 1, "inputs": {"OCCUPANCY_DETECTED": 1, "ENERGY_SAVING_MODE": 0, "HVAC_MODE_SELECTOR": 0}, "hold_ms": 30000, "expect": {"SUPPLY_FAN_RUN": 1}, "check": "fan on after 30s"},
+        {"cycle": 2, "inputs": {"OCCUPANCY_DETECTED": 1, "ENERGY_SAVING_MODE": 0, "HVAC_MODE_SELECTOR": 3}, "expect": {"SUPPLY_FAN_RUN": 0, "TEMP_SETPOINT_ADJUST": 4}, "check": "night: fan off, +4"},
+        {"cycle": 3, "inputs": {"OCCUPANCY_DETECTED": 0, "ENERGY_SAVING_MODE": 1, "HVAC_MODE_SELECTOR": 0}, "expect": {"SUPPLY_FAN_RUN": 0, "TEMP_SETPOINT_ADJUST": 3}, "check": "auto unoccupied energy-saving = +3"},
+        {"cycle": 4, "inputs": {"OCCUPANCY_DETECTED": 0, "ENERGY_SAVING_MODE": 0, "HVAC_MODE_SELECTOR": 0}, "expect": {"TEMP_SETPOINT_ADJUST": 2}, "check": "auto unoccupied standard = +2"},
+        {"cycle": 5, "inputs": {"OCCUPANCY_DETECTED": 0, "HVAC_MODE_SELECTOR": 1}, "expect": {"TEMP_SETPOINT_ADJUST": 1}, "check": "comfort unoccupied = +1"},
+        {"cycle": 6, "inputs": {"OCCUPANCY_DETECTED": 1, "HVAC_MODE_SELECTOR": 1}, "expect": {"TEMP_SETPOINT_ADJUST": 0}, "check": "comfort occupied = 0"},
+        {"cycle": 7, "inputs": {"OCCUPANCY_DETECTED": 0, "HVAC_MODE_SELECTOR": 2}, "expect": {"TEMP_SETPOINT_ADJUST": 4}, "check": "economy unoccupied = +4"},
+        {"cycle": 8, "inputs": {"OCCUPANCY_DETECTED": 1, "HVAC_MODE_SELECTOR": 2}, "expect": {"TEMP_SETPOINT_ADJUST": 0}, "check": "economy occupied = 0"}
+      ]
+    }
+  ]
+}

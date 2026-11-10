@@ -1,0 +1,36 @@
+{
+  "task_id": "E01_Filling",
+  "title": "Automated Filling Line Control",
+  "pou": "E01_Filling",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "bottleSensor", "dir": "input", "type": "BOOL"},
+    {"name": "cleaningConfirmButton", "dir": "input", "type": "BOOL"},
+    {"name": "fillingConfirmButton", "dir": "input", "type": "BOOL"},
+    {"name": "cappingConfirmButton", "dir": "input", "type": "BOOL"},
+    {"name": "packingConfirmButton", "dir": "input", "type": "BOOL"},
+    {"name": "finishedButton", "dir": "input", "type": "BOOL"},
+    {"name": "Pump_Motor", "dir": "output", "type": "BOOL"},
+    {"name": "Filling_Valve", "dir": "output", "type": "BOOL"},
+    {"name": "Capping_Machine", "dir": "output", "type": "BOOL"},
+    {"name": "Packing_Machine", "dir": "output", "type": "BOOL"},
+    {"name": "Completion_Light", "dir": "output", "type": "BOOL"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "full bottle sequence then reset",
+      "coverage": "step machine through all five stations, reset by finishedButton",
+      "initial_state": "all inputs FALSE",
+      "steps": [
+        {"cycle": 0, "inputs": {"bottleSensor": 0}, "expect": {"Pump_Motor": 0, "Filling_Valve": 0, "Completion_Light": 0}, "check": "idle"},
+        {"cycle": 1, "inputs": {"bottleSensor": 1}, "expect": {"Pump_Motor": 1, "Filling_Valve": 0}, "check": "bottle detected, cleaning starts"},
+        {"cycle": 2, "inputs": {"bottleSensor": 1, "cleaningConfirmButton": 1}, "expect": {"Pump_Motor": 0, "Filling_Valve": 1}, "check": "cleaning confirmed, filling starts"},
+        {"cycle": 3, "inputs": {"cleaningConfirmButton": 0, "fillingConfirmButton": 1}, "expect": {"Filling_Valve": 0, "Capping_Machine": 1}, "check": "filling confirmed, capping starts"},
+        {"cycle": 4, "inputs": {"fillingConfirmButton": 0, "cappingConfirmButton": 1}, "expect": {"Capping_Machine": 0, "Packing_Machine": 1}, "check": "capping confirmed, packing starts"},
+        {"cycle": 5, "inputs": {"cappingConfirmButton": 0, "packingConfirmButton": 1}, "expect": {"Packing_Machine": 0, "Completion_Light": 1}, "check": "packing confirmed, light on"},
+        {"cycle": 6, "inputs": {"packingConfirmButton": 0, "finishedButton": 1}, "expect": {"Completion_Light": 0, "Pump_Motor": 0}, "check": "reset for next bottle"}
+      ]
+    }
+  ]
+}

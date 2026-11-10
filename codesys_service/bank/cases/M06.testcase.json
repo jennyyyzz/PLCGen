@@ -1,0 +1,33 @@
+{
+  "task_id": "M06_SlabThick",
+  "title": "Slab Thickness Alarm and Fault History",
+  "pou": "M06_SlabThick",
+  "scan_ms": 100,
+  "interface": [
+    {"name": "THICKNESS_FAULT", "dir": "input", "type": "BOOL"},
+    {"name": "THICKNESS_SIGNAL_VALID", "dir": "input", "type": "BOOL"},
+    {"name": "CUTTING_RUN", "dir": "input", "type": "BOOL"},
+    {"name": "FaultTimestamp", "dir": "input", "type": "DINT"},
+    {"name": "CycleTime", "dir": "input", "type": "TIME"},
+    {"name": "THICKNESS_ALARM", "dir": "output", "type": "BOOL"},
+    {"name": "Slab_Fault_Counter", "dir": "output", "type": "UINT"},
+    {"name": "Slab_Runtime_Accumulator", "dir": "output", "type": "LTIME"},
+    {"name": "Slab_Fault_History[0]", "dir": "output", "type": "DINT"},
+    {"name": "Slab_Fault_History[1]", "dir": "output", "type": "DINT"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "fault count, history shift, alarm hold",
+      "coverage": "edge counting, history array shift, 500ms TOF hold",
+      "initial_state": "signal valid, cutting",
+      "steps": [
+        {"cycle": 0, "inputs": {"THICKNESS_FAULT": 0, "THICKNESS_SIGNAL_VALID": 1, "CUTTING_RUN": 1, "FaultTimestamp": 100, "CycleTime": 100}, "expect": {"THICKNESS_ALARM": 0, "Slab_Fault_Counter": 0, "Slab_Runtime_Accumulator": 100}, "check": "normal cutting accumulates runtime"},
+        {"cycle": 1, "inputs": {"THICKNESS_FAULT": 1, "FaultTimestamp": 200, "CycleTime": 100}, "expect": {"THICKNESS_ALARM": 1, "Slab_Fault_Counter": 1, "Slab_Fault_History[0]": 200}, "check": "fault edge counted and recorded"},
+        {"cycle": 2, "inputs": {"THICKNESS_FAULT": 0, "CycleTime": 100}, "expect": {"THICKNESS_ALARM": 1, "Slab_Runtime_Accumulator": 200}, "check": "alarm held after fault clears, no runtime while fault"},
+        {"cycle": 3, "inputs": {"THICKNESS_FAULT": 0, "CycleTime": 100}, "hold_ms": 500, "expect": {"THICKNESS_ALARM": 0}, "check": "hold expires 500ms after fault cleared"},
+        {"cycle": 4, "inputs": {"THICKNESS_FAULT": 1, "FaultTimestamp": 300, "CycleTime": 100}, "expect": {"Slab_Fault_Counter": 2, "Slab_Fault_History[0]": 300, "Slab_Fault_History[1]": 200}, "check": "second fault shifts history"}
+      ]
+    }
+  ]
+}

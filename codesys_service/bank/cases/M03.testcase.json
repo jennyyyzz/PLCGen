@@ -1,0 +1,44 @@
+{
+  "task_id": "M03_MovingAvg",
+  "title": "Calculate Moving Average",
+  "pou": "M03_MovingAvg",
+  "scan_ms": 20,
+  "interface": [
+    {"name": "cyclicExecution", "dir": "input", "type": "BOOL"},
+    {"name": "trigger", "dir": "input", "type": "BOOL"},
+    {"name": "value", "dir": "input", "type": "LREAL"},
+    {"name": "windowSize", "dir": "input", "type": "INT"},
+    {"name": "reset", "dir": "input", "type": "BOOL"},
+    {"name": "average", "dir": "output", "type": "LREAL"},
+    {"name": "windowSizeReached", "dir": "output", "type": "BOOL"},
+    {"name": "error", "dir": "output", "type": "BOOL"},
+    {"name": "status", "dir": "output", "type": "WORD"}
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "triggered moving average, window 3",
+      "coverage": "fill phase, steady state replacement, window reached",
+      "initial_state": "windowSize=3, trigger mode",
+      "steps": [
+        {"cycle": 0, "inputs": {"cyclicExecution": 0, "trigger": 0, "value": 10.0, "windowSize": 3, "reset": 0}, "expect": {"average": 0.0, "windowSizeReached": 0, "error": 0}, "check": "idle"},
+        {"cycle": 1, "inputs": {"trigger": 1, "value": 10.0, "windowSize": 3}, "expect": {"average": 10.0, "windowSizeReached": 0}, "check": "first value"},
+        {"cycle": 2, "inputs": {"trigger": 0, "value": 20.0, "windowSize": 3}, "expect": {"average": 10.0}, "check": "no edge, no update"},
+        {"cycle": 3, "inputs": {"trigger": 1, "value": 20.0, "windowSize": 3}, "expect": {"average": 15.0, "windowSizeReached": 0}, "check": "second value"},
+        {"cycle": 4, "inputs": {"trigger": 0, "value": 30.0, "windowSize": 3}, "expect": {"average": 15.0}, "check": "idle between pulses"},
+        {"cycle": 5, "inputs": {"trigger": 1, "value": 30.0, "windowSize": 3}, "expect": {"average": 20.0, "windowSizeReached": 1}, "check": "window full"},
+        {"cycle": 6, "inputs": {"trigger": 0, "value": 50.0, "windowSize": 3}, "expect": {"average": 20.0}, "check": "idle between pulses"},
+        {"cycle": 7, "inputs": {"trigger": 1, "value": 50.0, "windowSize": 3}, "expect": {"average": 33.333333, "windowSizeReached": 1}, "check": "oldest (10) replaced by 50"}
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "invalid window size error",
+      "coverage": "windowSize out of range -> 16#8200",
+      "initial_state": "default",
+      "steps": [
+        {"cycle": 0, "inputs": {"cyclicExecution": 0, "trigger": 0, "value": 1.0, "windowSize": 0, "reset": 0}, "expect": {"error": 1, "status": 33280}, "check": "16#8200"}
+      ]
+    }
+  ]
+}
