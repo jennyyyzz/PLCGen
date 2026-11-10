@@ -79,7 +79,8 @@ use instead: `python codesys_service/server.py --host 0.0.0.0`.
 Once the Agent's command-line interface is implemented, you will be able to run PLC code-generation tasks using either model.
 
 ```bash
-python main.py ...
+python main.py --model model_a
+python main.py --model model_b
 ```
 
 The Agent will generate ST code, invoke the CODESYS compiler, and attempt to repair compilation errors according to the configured retry limit.
