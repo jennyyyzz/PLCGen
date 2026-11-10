@@ -2,3 +2,7 @@ openai
 python-dotenv==1.1.1
 httpx==0.28.1
 pytest
+
+# CODESYS toolchain HTTP service (codesys_service/)
+fastapi
+uvicorn

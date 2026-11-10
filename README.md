@@ -41,13 +41,38 @@ LLM_MAX_TOKENS=1800
 LLM_TEMPERATURE=0.2
 ```
 
-### 3. Configure CODESYS
+### 3. CODESYS Toolchain HTTP Service
 
-Install CODESYS Development System and configure the local compilation environment.
+The `codesys_service/` directory contains the toolchain provided by Part 2:
+offline ST lint, CODESYS compilation, and test-case execution (dry / sim / ads backends),
+exposed as an HTTP API so the Agent framework and other parts can simply POST JSON.
 
-The project uses CODESYS to compile generated Structured Text (ST) code and provide compilation feedback to the Agent.
+**Users of the service** (everyone): see `codesys_service/README.md` for the full
+API reference and usage examples. Once the service host is running, just:
 
-Refer to the CODESYS setup instructions once the compiler interface has been implemented.
+```python
+import httpx
+r = httpx.post("http://<service-host>:8000/api/pipeline", json={
+    "st_code": st_code, "cases": case_json, "test_backend": "sim",
+}, timeout=600).json()
+```
+
+Interactive API docs are available at `http://<service-host>:8000/docs`.
+
+**Service host** (the machine with CODESYS installed):
+
+```bash
+pip install -r requirements.txt        # includes fastapi / uvicorn
+python codesys_service/serve_public.py # one-click: local service + free public URL
+```
+
+`serve_public.py` starts the service and a cloudflared quick tunnel, then prints a
+public `https://...trycloudflare.com` URL (needs the single-file
+[cloudflared](https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe)
+binary, no account required; see `codesys_service/README.md` section 4). For LAN-only
+use instead: `python codesys_service/server.py --host 0.0.0.0`.
+
+`codesys_service/selftest.py` runs the whole toolchain end-to-end for verification.
 
 ### 4. Run the Coding Agent
 

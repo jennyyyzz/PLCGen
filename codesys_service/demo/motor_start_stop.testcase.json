@@ -1,0 +1,56 @@
+{
+  "task_id": "motor_start_stop",
+  "title": "电机启停控制",
+  "pou": "PLC_PRG",
+  "scan_ms": 20,
+  "interface": [
+    { "name": "StartBtn", "dir": "input",  "type": "BOOL", "desc": "启动按钮" },
+    { "name": "StopBtn",  "dir": "input",  "type": "BOOL", "desc": "停止按钮" },
+    { "name": "EStop",    "dir": "input",  "type": "BOOL", "desc": "急停信号" },
+    { "name": "Motor",    "dir": "output", "type": "BOOL", "desc": "电机运行输出" }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "正常启动并保持运行",
+      "coverage": "初始化、正常启动、松开启动按钮后保持运行、运行中再次启动",
+      "initial_state": "所有输入 FALSE，Motor 为 FALSE",
+      "steps": [
+        { "cycle": 0, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "初始化后保持停止" },
+        { "cycle": 1, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "满足条件时启动" },
+        { "cycle": 2, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "松开启动按钮后仍运行" },
+        { "cycle": 3, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "连续保持运行" },
+        { "cycle": 4, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "再次按下启动，仍运行" }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "停止及停止优先",
+      "coverage": "运行中停止、启动与停止同时有效、松开停止后保持停止、再次启动",
+      "initial_state": "所有输入 FALSE，Motor 为 FALSE",
+      "steps": [
+        { "cycle": 0, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "初始化" },
+        { "cycle": 1, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "先启动电机" },
+        { "cycle": 2, "inputs": { "StartBtn": 0, "StopBtn": 1, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "按下停止，电机停止" },
+        { "cycle": 3, "inputs": { "StartBtn": 1, "StopBtn": 1, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "启动与停止同时有效，停止优先" },
+        { "cycle": 4, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "松开按钮后保持停止" },
+        { "cycle": 5, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "重新按下启动，可再次运行" }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "急停及多个信号同时有效",
+      "coverage": "运行中急停、启动与急停同时有效、三个信号同时有效、解除后再次启动",
+      "initial_state": "所有输入 FALSE，Motor 为 FALSE",
+      "steps": [
+        { "cycle": 0, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "初始化" },
+        { "cycle": 1, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "先启动电机" },
+        { "cycle": 2, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 1 }, "expect": { "Motor": 0 }, "check": "触发急停，电机停止" },
+        { "cycle": 3, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 1 }, "expect": { "Motor": 0 }, "check": "急停有效时，启动不能使电机运行" },
+        { "cycle": 4, "inputs": { "StartBtn": 1, "StopBtn": 1, "EStop": 1 }, "expect": { "Motor": 0 }, "check": "三个信号同时有效，电机停止" },
+        { "cycle": 5, "inputs": { "StartBtn": 0, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 0 }, "check": "解除急停且无启动输入，保持停止" },
+        { "cycle": 6, "inputs": { "StartBtn": 1, "StopBtn": 0, "EStop": 0 }, "expect": { "Motor": 1 }, "check": "重新按下启动，可再次运行" }
+      ]
+    }
+  ]
+}

@@ -19,6 +19,11 @@ venv/
 outputs/*
 !outputs/.gitkeep
 
+# CODESYS toolchain runtime artifacts (selftest / HTTP temp files)
+codesys_service/out/
+# cloudflared binary (host-only, ~55MB, not for the repo)
+codesys_service/cloudflared*.exe
+
 # Logs and temporary files
 *.log
 *.tmp
