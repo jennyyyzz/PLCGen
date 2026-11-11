@@ -26,7 +26,13 @@ pip install -r requirements.txt
 
 Copy `.env.example` to `.env` and add your own DMXAPI API key.
 
+Set CODESYS_API_URL to the service address provided by the device hosting CODESYS. 
+The service runs remotely, so users do not need to install CODESYS locally.
+
 The `.env` file is excluded from Git to prevent accidental exposure of API credentials.
+
+**Note:** The CODESYS service must be running for compilation to work. If the service host 
+restarts the Cloudflare tunnel, the public URL may change and CODESYS_API_URL must be updated.
 
 **Default configuration:**
 
@@ -39,6 +45,8 @@ MODEL_B=qwen3-coder-flash
 
 LLM_MAX_TOKENS=1800
 LLM_TEMPERATURE=0.2
+
+CODESYS_API_URL=https://associations-food-firmware-riders.trycloudflare.com
 ```
 
 ### 3. CODESYS Toolchain HTTP Service
