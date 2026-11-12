@@ -1,3 +1,8 @@
+
+"""
+Tools used by the program.
+"""
+
 import json
 import os
 
@@ -7,6 +12,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def compile_code(code: str) -> str:
+    """
+    CODESYS compilation tool.
+
+    Sends generated ST code to the CODESYS HTTP service and
+    returns structured compilation results.
+    """
     base_url = os.getenv("CODESYS_API_URL", "").rstrip("/")
     if not base_url:
         return json.dumps({

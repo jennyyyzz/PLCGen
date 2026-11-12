@@ -1,5 +1,50 @@
 # PLCGen
 
+This program is an LLM-based coding agent system that automatically
+generates, compiles and repairs PLC Structured Text (ST) code. It uses
+a custom single-agent harness to manage task executions, interact with 
+the CODESYS compiler and iteratively fix compilation errors, allowing up to three repair
+attempts. 
+
+This project also evaluates and compares the performance of different
+LLMs models and agent architectures.
+
+The project is built on Microsoft's AutoGen AgentChat API and uses an
+OpenAI-compatible interface. It is configured to use DMXAPI by default, 
+supporting models such as Deepseek and Qwen, but can be adapted to other
+compatible API providers.
+
+## System Architecture
+
+PLCGen uses a lightweight single-agent architecture.
+
+There are three main components:
+* **CodeGeneratorAgent**: An AutoGen Assistant-Agent that generates 
+PLC ST code from natural-language requirements and repairs code using feedback provided 
+by the compiler.
+* **PLCHarness**: An independently developed orchestration layer responsible for task
+execution, context management, compilation, iterative repair and termination conditions.
+* **CODESYS Compilation Service**: An external HTTP service that compiles generated ST 
+code and returns structured compilation results.
+
+Compilation is a mandatory step after code generation. The harness invokes the compiler
+directly rather than delegating the decision to an additional LLM Agent, reducing unnecessary
+API calls and improving reproducibility.
+
+### Harness Design
+
+PLCHarness implements five core design principles:
+* **Task Organization**: Loads PLC problems from a structured JSON dataset and executes a 
+predefined generation → compilation → repair workflow.
+* **Context Management**: Resets Agent conversation states between independent problems and
+retains necessary task requirements and compiler feedback during repair iterations.
+* **Tool Invocation**: Automatically invokes CODESYS HTTP compilation service after code generation
+and extracts relevant error messages.
+* **Compilation and Repair**: Uses compiler feedback to guide code refinement.
+* **Termination Conditions**: Stops when compilation succeeds, the compilation service fails or
+the maximum number of repair attempts is reached. The system allows up to three repair attempts by
+default.
+
 ## Quick Start
 
 Python 3.11 or higher is required.
@@ -43,7 +88,7 @@ LLM_BASE_URL=https://www.dmxapi.cn/v1
 MODEL_A=deepseek-v4-pro-0813
 MODEL_B=qwen3-coder-flash
 
-LLM_MAX_TOKENS=1800
+LLM_MAX_TOKENS=16384
 LLM_TEMPERATURE=0.2
 
 CODESYS_API_URL=https://associations-food-firmware-riders.trycloudflare.com
@@ -84,11 +129,31 @@ use instead: `python codesys_service/server.py --host 0.0.0.0`.
 
 ### 4. Run the Coding Agent
 
-Once the Agent's command-line interface is implemented, you will be able to run PLC code-generation tasks using either model.
-
+After installing the dependencies and configuring the .env file, run the Agent using either configured model:
 ```bash
 python main.py --model model_a
 python main.py --model model_b
 ```
 
-The Agent will generate ST code, invoke the CODESYS compiler, and attempt to repair compilation errors according to the configured retry limit.
+The program automatically loads the PLC problems from `data/tasks.json`, generate ST code, invokes the 
+CODESYS compiler, and attempts to repair compilation errors according to the configured retry limit.
+
+Each problem is processed independently, with generated code and execution results saved under `results\`.
+
+## Dataset and Results
+### Dataset
+
+The PLC tasks are stored in `data/tasks.json`. Tasks are separated by difficulty.
+Each task contains a natural-language description of the required
+behaviour and interface definition. The program assigns a unique identifier to each task and processes them sequentially.
+
+### Outputs
+
+For each task, two files are generated:
+
+* `code.st`: Final generated ST code.
+* `result.json`: Execution metrics such as compilation outcome, number of attempts, execution time, token usage and
+compilation history.
+
+An overall `run_summary.json` file records the total number of tasks, compilation success rate, execution time and total
+token consumption.

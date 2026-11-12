@@ -1,3 +1,10 @@
+
+"""
+PLC Coding Agent and custom harness.
+
+Handles ST code generation, compiler-driven repair,
+context management and termination conditions.
+"""
 import json
 
 from autogen_agentchat.agents import AssistantAgent
@@ -99,6 +106,7 @@ def build_team(model_client):
     return generator
 
 def token_usage(messages):
+    """ Calculates the token usage for each message. """
     prompt_tokens = 0
     completion_tokens = 0
     for message in messages:

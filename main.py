@@ -1,3 +1,4 @@
+
 import asyncio
 import json
 import time
@@ -7,6 +8,7 @@ from agent import build_team, PLCHarness
 
 
 def load_tasks() -> list[dict]:
+    """ Loads tasks from the JSON file. """
     data = json.load(open("data/tasks.json"))
     tasks = []
 
@@ -30,7 +32,7 @@ async def main():
     generator = build_team(model_client)
     harness = PLCHarness(generator, max_repairs=3)
     tasks = load_tasks()
-    out_dir = make_run_dir(f"{args.model} - model_name")
+    out_dir = make_run_dir(f"{args.model} - {model_name}")
     overall_summary = []
     try:
         for task in tasks:

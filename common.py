@@ -1,5 +1,6 @@
 
-"""Shared methods for the PLC Coding Agent.
+"""
+Shared methods for the PLC Coding Agent.
 
 Handles configuration, LLM clients, command-line
 arguments, output directories and result saving.
