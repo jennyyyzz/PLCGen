@@ -44,14 +44,6 @@ class PLCHarness:
             p, c = token_usage(generation.messages)
             prompt_tokens += p
             completion_tokens += c
-            print(f"\n--- Task generation, attempt {i + 1} ---")
-            print("Stop reason:", generation.stop_reason)
-
-            for message in generation.messages:
-                print("Message type:", type(message).__name__)
-                print("Content:", repr(message.content)[:500])
-                print("Token usage:", getattr(message, "models_usage", None))
-
             code = str(generation.messages[-1].content).strip()
             print("Code length:", len(code))
             if not code or code in previous_codes:
