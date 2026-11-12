@@ -1,0 +1,141 @@
+{
+  "version": "1.0",
+  "naming": {
+    "public": "FB_Q01-FB_Q20",
+    "custom": "FB_C01-FB_C12"
+  },
+  "tasks": [
+    {
+      "id": "C01",
+      "pou": "FB_C01",
+      "title": "Product Reject and Filtering Station",
+      "difficulty": "easy",
+      "primary_axis": "sorting_filtering",
+      "question": "data/custom_questions.json#C01",
+      "spec": "specs/custom/C01.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C01.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C01.st"
+    },
+    {
+      "id": "C02",
+      "pou": "FB_C02",
+      "title": "Two-Hand Safety Press",
+      "difficulty": "easy",
+      "primary_axis": "safety_logic",
+      "question": "data/custom_questions.json#C02",
+      "spec": "specs/custom/C02.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C02.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C02.st"
+    },
+    {
+      "id": "C03",
+      "pou": "FB_C03",
+      "title": "Automatic Barrier Gate",
+      "difficulty": "easy",
+      "primary_axis": "cyclic_timing",
+      "question": "data/custom_questions.json#C03",
+      "spec": "specs/custom/C03.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C03.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C03.st"
+    },
+    {
+      "id": "C04",
+      "pou": "FB_C04",
+      "title": "Star-Delta Motor Starter",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "question": "data/custom_questions.json#C04",
+      "spec": "specs/custom/C04.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C04.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C04.st"
+    },
+    {
+      "id": "C05",
+      "pou": "FB_C05",
+      "title": "Car Wash Sequence",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "question": "data/custom_questions.json#C05",
+      "spec": "specs/custom/C05.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C05.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C05.st"
+    },
+    {
+      "id": "C06",
+      "pou": "FB_C06",
+      "title": "Elevator Door Control",
+      "difficulty": "medium",
+      "primary_axis": "safety_logic",
+      "question": "data/custom_questions.json#C06",
+      "spec": "specs/custom/C06.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C06.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C06.st"
+    },
+    {
+      "id": "C07",
+      "pou": "FB_C07",
+      "title": "Bottle Height Sorting",
+      "difficulty": "medium",
+      "primary_axis": "sorting_filtering",
+      "question": "data/custom_questions.json#C07",
+      "spec": "specs/custom/C07.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C07.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C07.st"
+    },
+    {
+      "id": "C08",
+      "pou": "FB_C08",
+      "title": "Greenhouse Irrigation Zones",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "question": "data/custom_questions.json#C08",
+      "spec": "specs/custom/C08.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C08.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C08.st"
+    },
+    {
+      "id": "C09",
+      "pou": "FB_C09",
+      "title": "Conveyor Zone Accumulation",
+      "difficulty": "hard",
+      "primary_axis": "sorting_filtering",
+      "question": "data/custom_questions.json#C09",
+      "spec": "specs/custom/C09.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C09.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C09.st"
+    },
+    {
+      "id": "C10",
+      "pou": "FB_C10",
+      "title": "Boiler Purge and Ignition Sequence",
+      "difficulty": "hard",
+      "primary_axis": "safety_logic",
+      "question": "data/custom_questions.json#C10",
+      "spec": "specs/custom/C10.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C10.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C10.st"
+    },
+    {
+      "id": "C11",
+      "pou": "FB_C11",
+      "title": "Palletizer Layer Counting",
+      "difficulty": "hard",
+      "primary_axis": "sorting_filtering",
+      "question": "data/custom_questions.json#C11",
+      "spec": "specs/custom/C11.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C11.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C11.st"
+    },
+    {
+      "id": "C12",
+      "pou": "FB_C12",
+      "title": "Safety Light Curtain Muting",
+      "difficulty": "hard",
+      "primary_axis": "safety_logic",
+      "question": "data/custom_questions.json#C12",
+      "spec": "specs/custom/C12.ltl.json",
+      "test_case": "codesys_service/bank/custom/cases/C12.testcase.json",
+      "reference_st": "codesys_service/bank/custom/st/FB_C12.st"
+    }
+  ]
+}

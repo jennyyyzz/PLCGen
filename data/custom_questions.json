@@ -1,0 +1,1000 @@
+{
+  "easy": [
+    {
+      "id": "C01",
+      "pou": "FB_C01",
+      "title": "Product Reject and Filtering Station",
+      "difficulty": "easy",
+      "primary_axis": "sorting_filtering",
+      "diversity_tags": [
+        "edge_detection",
+        "counter",
+        "timer",
+        "batch",
+        "reject"
+      ],
+      "rationale": "A reject station is a common end-of-line filtering task: good and defective parts must be classified, counted and separated without stopping the conveyor until a batch is complete.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "RunSwitch",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Enables the conveyor"
+        },
+        {
+          "name": "PartPresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Part is present at the inspection point"
+        },
+        {
+          "name": "DefectSensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "TRUE when the present part is defective"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears counters and batch-full state"
+        },
+        {
+          "name": "ConveyorMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Conveyor drive command"
+        },
+        {
+          "name": "RejectPusher",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Defective-part pusher command"
+        },
+        {
+          "name": "AcceptCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Number of accepted parts in the batch"
+        },
+        {
+          "name": "RejectCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Number of rejected parts in the batch"
+        },
+        {
+          "name": "BatchFull",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Batch of 5 parts completed"
+        }
+      ],
+      "en": "# Product Reject and Filtering Station\n\n- **Difficulty:** Easy (easy)\n- **POU:** `FB_C01`\n- **Primary axis:** `sorting_filtering`\n\n## Requirements\n\nA conveyor transports parts past an inspection sensor. A part is defective when `DefectSensor` is TRUE while `PartPresent` is TRUE. The conveyor runs while `RunSwitch` is TRUE, unless the batch is complete. The batch size is 5 parts.\n\nWhen a rising edge of `PartPresent` occurs while the conveyor is enabled:\n- if `DefectSensor` is TRUE, count the part as rejected, activate `RejectPusher` for 1 s and then retract it;\n- otherwise count the part as accepted.\n\nWhen the total number of classified parts reaches 5, set `BatchFull` to TRUE and stop the conveyor. Pressing `ResetButton` clears both counters, clears `BatchFull` and allows a new batch. `RejectPusher` must never be active when `BatchFull` is TRUE.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `RunSwitch` | `BOOL` | Enables the conveyor |\n| Input | `PartPresent` | `BOOL` | Part is present at the inspection point |\n| Input | `DefectSensor` | `BOOL` | TRUE when the present part is defective |\n| Input | `ResetButton` | `BOOL` | Clears counters and batch-full state |\n| Output | `ConveyorMotor` | `BOOL` | Conveyor drive command |\n| Output | `RejectPusher` | `BOOL` | Defective-part pusher command |\n| Output | `AcceptCount` | `INT` | Number of accepted parts in the batch |\n| Output | `RejectCount` | `INT` | Number of rejected parts in the batch |\n| Output | `BatchFull` | `BOOL` | Batch of 5 parts completed |\n"
+    },
+    {
+      "id": "C02",
+      "pou": "FB_C02",
+      "title": "Two-Hand Safety Press",
+      "difficulty": "easy",
+      "primary_axis": "safety_logic",
+      "diversity_tags": [
+        "safety_interlock",
+        "anti_tiedown",
+        "timer",
+        "edge_detection"
+      ],
+      "rationale": "Two-hand control prevents an operator from reaching into a press while it closes; the anti-tiedown timer catches a blocked or defeated button.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "LeftButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Left operator button"
+        },
+        {
+          "name": "RightButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Right operator button"
+        },
+        {
+          "name": "PartPresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Part is present in the press"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears the fault latch"
+        },
+        {
+          "name": "PressOutput",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Press closes while TRUE"
+        },
+        {
+          "name": "CycleComplete",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "One-scan pulse after a press cycle"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Anti-tiedown fault latched"
+        }
+      ],
+      "en": "# Two-Hand Safety Press\n\n- **Difficulty:** Easy (easy)\n- **POU:** `FB_C02`\n- **Primary axis:** `safety_logic`\n\n## Requirements\n\nA press may close only when both operator buttons (`LeftButton`, `RightButton`) are held and a part is present (`PartPresent`). The press output `PressOutput` follows the two buttons while the safety conditions are satisfied.\n\nSafety requirements:\n- If one button is held alone for more than 500 ms, latch `Fault` to TRUE. While `Fault` is TRUE, `PressOutput` must remain FALSE.\n- `ResetButton` clears `Fault` only when neither button is held.\n- When `PressOutput` falls from TRUE to FALSE, emit a one-scan `CycleComplete` pulse.\n- `PressOutput` must never be TRUE without `PartPresent`.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `LeftButton` | `BOOL` | Left operator button |\n| Input | `RightButton` | `BOOL` | Right operator button |\n| Input | `PartPresent` | `BOOL` | Part is present in the press |\n| Input | `ResetButton` | `BOOL` | Clears the fault latch |\n| Output | `PressOutput` | `BOOL` | Press closes while TRUE |\n| Output | `CycleComplete` | `BOOL` | One-scan pulse after a press cycle |\n| Output | `Fault` | `BOOL` | Anti-tiedown fault latched |\n"
+    },
+    {
+      "id": "C03",
+      "pou": "FB_C03",
+      "title": "Automatic Barrier Gate",
+      "difficulty": "easy",
+      "primary_axis": "cyclic_timing",
+      "diversity_tags": [
+        "timer",
+        "edge_detection",
+        "safety_beam",
+        "access_control"
+      ],
+      "rationale": "Vehicle barriers combine a short open command, a hold-open condition and a delayed close; the safety beam must reopen the gate at any time.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "VehiclePresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Vehicle loop detector"
+        },
+        {
+          "name": "OpenButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Manual open command"
+        },
+        {
+          "name": "SafetyBeam",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Safety beam interrupted (obstacle)"
+        },
+        {
+          "name": "GateOpen",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Gate is fully open"
+        },
+        {
+          "name": "GateClosed",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Gate is fully closed"
+        },
+        {
+          "name": "WarningLight",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Safety warning lamp"
+        }
+      ],
+      "en": "# Automatic Barrier Gate\n\n- **Difficulty:** Easy (easy)\n- **POU:** `FB_C03`\n- **Primary axis:** `cyclic_timing`\n\n## Requirements\n\nA vehicle barrier opens when `OpenButton` is pressed (rising edge), when a vehicle is detected (`VehiclePresent`), or when the safety beam is interrupted (`SafetyBeam`). The gate remains open while `VehiclePresent` or `SafetyBeam` is TRUE.\n\nWhen the gate is open and there is no vehicle, no beam interruption and no open command, the gate closes automatically after 3 s. If `SafetyBeam` becomes TRUE while the gate is closed, the gate reopens immediately and `WarningLight` is TRUE. `WarningLight` follows `SafetyBeam`. `GateOpen` and `GateClosed` are mutually exclusive and describe the gate state.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `VehiclePresent` | `BOOL` | Vehicle loop detector |\n| Input | `OpenButton` | `BOOL` | Manual open command |\n| Input | `SafetyBeam` | `BOOL` | Safety beam interrupted (obstacle) |\n| Output | `GateOpen` | `BOOL` | Gate is fully open |\n| Output | `GateClosed` | `BOOL` | Gate is fully closed |\n| Output | `WarningLight` | `BOOL` | Safety warning lamp |\n"
+    }
+  ],
+  "medium": [
+    {
+      "id": "C04",
+      "pou": "FB_C04",
+      "title": "Star-Delta Motor Starter",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "diversity_tags": [
+        "timer",
+        "sequence",
+        "motor_starting",
+        "interlock",
+        "fault_latch"
+      ],
+      "rationale": "Star-delta starting is a standard motor-control sequence that requires a timed transition, contactor interlocking and a latched overload fault.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "StartButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Start command"
+        },
+        {
+          "name": "StopButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Stop command"
+        },
+        {
+          "name": "Overload",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Thermal overload trip"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears the fault latch"
+        },
+        {
+          "name": "MainContactor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Main contactor"
+        },
+        {
+          "name": "StarContactor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Star contactor"
+        },
+        {
+          "name": "DeltaContactor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Delta contactor"
+        },
+        {
+          "name": "Running",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Motor is running"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Overload fault latched"
+        }
+      ],
+      "en": "# Star-Delta Motor Starter\n\n- **Difficulty:** Medium (medium)\n- **POU:** `FB_C04`\n- **Primary axis:** `cyclic_timing`\n\n## Requirements\n\nImplement a star-delta starter. A rising edge of `StartButton` energizes `MainContactor` and `StarContactor`. After 3 s the star contactor is de-energized and `DeltaContactor` is energized. `MainContactor` stays energized while the motor runs.\n\n`StopButton` or `Overload` must stop the motor immediately. `Overload` latches `Fault`; `ResetButton` clears it only when `Overload` is FALSE. `StarContactor` and `DeltaContactor` must never be TRUE at the same time.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `StartButton` | `BOOL` | Start command |\n| Input | `StopButton` | `BOOL` | Stop command |\n| Input | `Overload` | `BOOL` | Thermal overload trip |\n| Input | `ResetButton` | `BOOL` | Clears the fault latch |\n| Output | `MainContactor` | `BOOL` | Main contactor |\n| Output | `StarContactor` | `BOOL` | Star contactor |\n| Output | `DeltaContactor` | `BOOL` | Delta contactor |\n| Output | `Running` | `BOOL` | Motor is running |\n| Output | `Fault` | `BOOL` | Overload fault latched |\n"
+    },
+    {
+      "id": "C05",
+      "pou": "FB_C05",
+      "title": "Car Wash Sequence",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "diversity_tags": [
+        "state_machine",
+        "timer",
+        "sequence",
+        "emergency_stop"
+      ],
+      "rationale": "A car wash is a clean multi-step cyclic process: foam, brush, rinse and dry must run in order, and an emergency stop must abort the sequence safely.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "StartButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Starts a wash cycle"
+        },
+        {
+          "name": "EmergencyStop",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Emergency stop"
+        },
+        {
+          "name": "VehiclePresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Vehicle in the wash bay"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears the emergency fault"
+        },
+        {
+          "name": "ConveyorMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Conveyor drive"
+        },
+        {
+          "name": "FoamValve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Foam valve"
+        },
+        {
+          "name": "BrushMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Brush motor"
+        },
+        {
+          "name": "RinseValve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Rinse valve"
+        },
+        {
+          "name": "DryFan",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Dry fan"
+        },
+        {
+          "name": "CycleComplete",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Wash cycle finished"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Emergency fault latched"
+        }
+      ],
+      "en": "# Car Wash Sequence\n\n- **Difficulty:** Medium (medium)\n- **POU:** `FB_C05`\n- **Primary axis:** `cyclic_timing`\n\n## Requirements\n\nA car wash cycle starts on a rising edge of `StartButton` when `VehiclePresent` is TRUE. The cycle is:\n1. conveyor and foam for 2 s;\n2. conveyor and brush for 2 s;\n3. conveyor and rinse for 1 s;\n4. conveyor and dry fan for 1 s;\nthen the conveyor stops and `CycleComplete` is TRUE.\n\n`EmergencyStop` immediately switches off all actuators and latches `Fault`; `ResetButton` clears the fault. A new cycle cannot start while `Fault` is TRUE. `CycleComplete` is cleared by `ResetButton` or by a new start.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `StartButton` | `BOOL` | Starts a wash cycle |\n| Input | `EmergencyStop` | `BOOL` | Emergency stop |\n| Input | `VehiclePresent` | `BOOL` | Vehicle in the wash bay |\n| Input | `ResetButton` | `BOOL` | Clears the emergency fault |\n| Output | `ConveyorMotor` | `BOOL` | Conveyor drive |\n| Output | `FoamValve` | `BOOL` | Foam valve |\n| Output | `BrushMotor` | `BOOL` | Brush motor |\n| Output | `RinseValve` | `BOOL` | Rinse valve |\n| Output | `DryFan` | `BOOL` | Dry fan |\n| Output | `CycleComplete` | `BOOL` | Wash cycle finished |\n| Output | `Fault` | `BOOL` | Emergency fault latched |\n"
+    },
+    {
+      "id": "C06",
+      "pou": "FB_C06",
+      "title": "Elevator Door Control",
+      "difficulty": "medium",
+      "primary_axis": "safety_logic",
+      "diversity_tags": [
+        "safety_interlock",
+        "timer",
+        "door_control",
+        "limit_switch"
+      ],
+      "rationale": "Elevator doors combine limit switches, an obstacle detector and an automatic close timer; the obstacle must always win over a close command.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "OpenButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Open door command"
+        },
+        {
+          "name": "CloseButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Close door command"
+        },
+        {
+          "name": "ObstacleSensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Obstacle in the door path"
+        },
+        {
+          "name": "DoorOpenLimit",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Door fully open limit switch"
+        },
+        {
+          "name": "DoorClosedLimit",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Door fully closed limit switch"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears the invalid-limit fault"
+        },
+        {
+          "name": "DoorMotorOpen",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Open motor"
+        },
+        {
+          "name": "DoorMotorClose",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Close motor"
+        },
+        {
+          "name": "DoorOpen",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Door is open"
+        },
+        {
+          "name": "DoorClosed",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Door is closed"
+        },
+        {
+          "name": "WarningBuzzer",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Obstacle warning"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Invalid limit state latched"
+        }
+      ],
+      "en": "# Elevator Door Control\n\n- **Difficulty:** Medium (medium)\n- **POU:** `FB_C06`\n- **Primary axis:** `safety_logic`\n\n## Requirements\n\nControl an elevator door with open and close commands. `DoorOpen` and `DoorClosed` report the limit switches. `OpenButton` starts opening; `CloseButton` starts closing only while `ObstacleSensor` is FALSE.\n\nIf the door is open with no obstacle, no open command and no close command, it closes automatically after 5 s. If `ObstacleSensor` is TRUE, the door must never close and `WarningBuzzer` is TRUE. If the obstacle appears while closing, the door reverses to opening. Both limit switches TRUE is an invalid state: latch `Fault`, stop the motors, and clear it with `ResetButton`.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `OpenButton` | `BOOL` | Open door command |\n| Input | `CloseButton` | `BOOL` | Close door command |\n| Input | `ObstacleSensor` | `BOOL` | Obstacle in the door path |\n| Input | `DoorOpenLimit` | `BOOL` | Door fully open limit switch |\n| Input | `DoorClosedLimit` | `BOOL` | Door fully closed limit switch |\n| Input | `ResetButton` | `BOOL` | Clears the invalid-limit fault |\n| Output | `DoorMotorOpen` | `BOOL` | Open motor |\n| Output | `DoorMotorClose` | `BOOL` | Close motor |\n| Output | `DoorOpen` | `BOOL` | Door is open |\n| Output | `DoorClosed` | `BOOL` | Door is closed |\n| Output | `WarningBuzzer` | `BOOL` | Obstacle warning |\n| Output | `Fault` | `BOOL` | Invalid limit state latched |\n"
+    },
+    {
+      "id": "C07",
+      "pou": "FB_C07",
+      "title": "Bottle Height Sorting",
+      "difficulty": "medium",
+      "primary_axis": "sorting_filtering",
+      "diversity_tags": [
+        "analog_threshold",
+        "sorting",
+        "counter",
+        "timer",
+        "fault"
+      ],
+      "rationale": "Height sorting is a realistic quality-gate task: an analog measurement must be filtered into accept/reject classes and the two streams counted independently.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "RunSwitch",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Enables the conveyor"
+        },
+        {
+          "name": "PartPresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Bottle at the height sensor"
+        },
+        {
+          "name": "HeightSensor",
+          "dir": "input",
+          "type": "REAL",
+          "desc": "Measured bottle height in mm"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears counters and fault"
+        },
+        {
+          "name": "ConveyorMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Conveyor drive"
+        },
+        {
+          "name": "AcceptGate",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Accept diverter gate"
+        },
+        {
+          "name": "RejectGate",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Reject diverter gate"
+        },
+        {
+          "name": "AcceptCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Accepted bottle count"
+        },
+        {
+          "name": "RejectCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Rejected bottle count"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Invalid sensor value latched"
+        }
+      ],
+      "en": "# Bottle Height Sorting\n\n- **Difficulty:** Medium (medium)\n- **POU:** `FB_C07`\n- **Primary axis:** `sorting_filtering`\n\n## Requirements\n\nA conveyor moves bottles past an analog height sensor. When a rising edge of `PartPresent` occurs while `RunSwitch` is TRUE, classify `HeightSensor`:\n- 40.0 to 60.0 inclusive: accepted bottle; pulse `AcceptGate` for 500 ms and increment `AcceptCount`;\n- outside that range: rejected bottle; pulse `RejectGate` for 500 ms and increment `RejectCount`.\n\nA sensor value below 0.0 or above 100.0 is invalid: latch `Fault`, stop the conveyor and inhibit both gates. `ResetButton` clears the counters and the fault. `AcceptGate` and `RejectGate` must never be TRUE together.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `RunSwitch` | `BOOL` | Enables the conveyor |\n| Input | `PartPresent` | `BOOL` | Bottle at the height sensor |\n| Input | `HeightSensor` | `REAL` | Measured bottle height in mm |\n| Input | `ResetButton` | `BOOL` | Clears counters and fault |\n| Output | `ConveyorMotor` | `BOOL` | Conveyor drive |\n| Output | `AcceptGate` | `BOOL` | Accept diverter gate |\n| Output | `RejectGate` | `BOOL` | Reject diverter gate |\n| Output | `AcceptCount` | `INT` | Accepted bottle count |\n| Output | `RejectCount` | `INT` | Rejected bottle count |\n| Output | `Fault` | `BOOL` | Invalid sensor value latched |\n"
+    },
+    {
+      "id": "C08",
+      "pou": "FB_C08",
+      "title": "Greenhouse Irrigation Zones",
+      "difficulty": "medium",
+      "primary_axis": "cyclic_timing",
+      "diversity_tags": [
+        "sequence",
+        "timer",
+        "analog_threshold",
+        "scheduling",
+        "stop"
+      ],
+      "rationale": "Zone irrigation is a cyclic scheduling task with analog moisture thresholds; dry zones are watered in order and wet zones are skipped.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "StartButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Starts an irrigation cycle"
+        },
+        {
+          "name": "StopButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Aborts the cycle"
+        },
+        {
+          "name": "Zone1Moisture",
+          "dir": "input",
+          "type": "REAL",
+          "desc": "Soil moisture of zone 1"
+        },
+        {
+          "name": "Zone2Moisture",
+          "dir": "input",
+          "type": "REAL",
+          "desc": "Soil moisture of zone 2"
+        },
+        {
+          "name": "Zone3Moisture",
+          "dir": "input",
+          "type": "REAL",
+          "desc": "Soil moisture of zone 3"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears cycle-complete state"
+        },
+        {
+          "name": "Zone1Valve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 1 valve"
+        },
+        {
+          "name": "Zone2Valve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 2 valve"
+        },
+        {
+          "name": "Zone3Valve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 3 valve"
+        },
+        {
+          "name": "Pump",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Irrigation pump"
+        },
+        {
+          "name": "CycleComplete",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "All zones processed"
+        }
+      ],
+      "en": "# Greenhouse Irrigation Zones\n\n- **Difficulty:** Medium (medium)\n- **POU:** `FB_C08`\n- **Primary axis:** `cyclic_timing`\n\n## Requirements\n\nAn irrigation cycle starts on a rising edge of `StartButton`. Three zones are visited in order. For each zone, if its moisture is below 30.0, open its valve and run `Pump` for 3 s; if the moisture is 30.0 or higher, skip the zone immediately.\n\nAfter zone 3 the cycle ends: all valves and the pump are OFF and `CycleComplete` is TRUE. `StopButton` aborts the cycle immediately and clears `CycleComplete`. `ResetButton` clears `CycleComplete`. The pump must run whenever any zone valve is open.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `StartButton` | `BOOL` | Starts an irrigation cycle |\n| Input | `StopButton` | `BOOL` | Aborts the cycle |\n| Input | `Zone1Moisture` | `REAL` | Soil moisture of zone 1 |\n| Input | `Zone2Moisture` | `REAL` | Soil moisture of zone 2 |\n| Input | `Zone3Moisture` | `REAL` | Soil moisture of zone 3 |\n| Input | `ResetButton` | `BOOL` | Clears cycle-complete state |\n| Output | `Zone1Valve` | `BOOL` | Zone 1 valve |\n| Output | `Zone2Valve` | `BOOL` | Zone 2 valve |\n| Output | `Zone3Valve` | `BOOL` | Zone 3 valve |\n| Output | `Pump` | `BOOL` | Irrigation pump |\n| Output | `CycleComplete` | `BOOL` | All zones processed |\n"
+    }
+  ],
+  "hard": [
+    {
+      "id": "C09",
+      "pou": "FB_C09",
+      "title": "Conveyor Zone Accumulation",
+      "difficulty": "hard",
+      "primary_axis": "sorting_filtering",
+      "diversity_tags": [
+        "accumulation",
+        "handshake",
+        "jam_detection",
+        "timer",
+        "state_machine"
+      ],
+      "rationale": "Zone accumulation is a core material-handling function: parts must queue without collision, and a blocked zone must raise a jam alarm instead of stalling silently.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "RunSwitch",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Enables the conveyor line"
+        },
+        {
+          "name": "Zone1Sensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Part in zone 1"
+        },
+        {
+          "name": "Zone2Sensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Part in zone 2"
+        },
+        {
+          "name": "Zone3Sensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Part in zone 3"
+        },
+        {
+          "name": "ReleaseButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Discharge zone 3"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears the jam alarm"
+        },
+        {
+          "name": "Zone1Motor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 1 motor"
+        },
+        {
+          "name": "Zone2Motor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 2 motor"
+        },
+        {
+          "name": "Zone3Motor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 3 motor"
+        },
+        {
+          "name": "Zone1Full",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 1 blocked by zone 2"
+        },
+        {
+          "name": "Zone2Full",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 2 blocked by zone 3"
+        },
+        {
+          "name": "Zone3Full",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Zone 3 waiting for release"
+        },
+        {
+          "name": "JamAlarm",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Jam latched"
+        }
+      ],
+      "en": "# Conveyor Zone Accumulation\n\n- **Difficulty:** Hard (hard)\n- **POU:** `FB_C09`\n- **Primary axis:** `sorting_filtering`\n\n## Requirements\n\nA three-zone conveyor moves parts downstream. `Zone1Sensor`, `Zone2Sensor` and `Zone3Sensor` indicate a part in each zone. A zone motor runs only when its zone has a part and the downstream zone is free. Zone 3 additionally requires `ReleaseButton` to discharge.\n\n`Zone1Full` means zone 1 and zone 2 both contain a part; `Zone2Full` means zones 2 and 3 both contain a part; `Zone3Full` means zone 3 has a part and `ReleaseButton` is FALSE. If a zone has a part but its motor cannot run for more than 5 s, latch `JamAlarm`, switch all motors OFF and require `ResetButton` to clear the alarm.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `RunSwitch` | `BOOL` | Enables the conveyor line |\n| Input | `Zone1Sensor` | `BOOL` | Part in zone 1 |\n| Input | `Zone2Sensor` | `BOOL` | Part in zone 2 |\n| Input | `Zone3Sensor` | `BOOL` | Part in zone 3 |\n| Input | `ReleaseButton` | `BOOL` | Discharge zone 3 |\n| Input | `ResetButton` | `BOOL` | Clears the jam alarm |\n| Output | `Zone1Motor` | `BOOL` | Zone 1 motor |\n| Output | `Zone2Motor` | `BOOL` | Zone 2 motor |\n| Output | `Zone3Motor` | `BOOL` | Zone 3 motor |\n| Output | `Zone1Full` | `BOOL` | Zone 1 blocked by zone 2 |\n| Output | `Zone2Full` | `BOOL` | Zone 2 blocked by zone 3 |\n| Output | `Zone3Full` | `BOOL` | Zone 3 waiting for release |\n| Output | `JamAlarm` | `BOOL` | Jam latched |\n"
+    },
+    {
+      "id": "C10",
+      "pou": "FB_C10",
+      "title": "Boiler Purge and Ignition Sequence",
+      "difficulty": "hard",
+      "primary_axis": "safety_logic",
+      "diversity_tags": [
+        "safety_sequence",
+        "timer",
+        "flame_proving",
+        "lockout",
+        "state_machine"
+      ],
+      "rationale": "Burner start-up is safety-critical: a purge must precede ignition, flame must be proven within a fixed window, and failure must latch a lockout.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "StartButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Burner start command"
+        },
+        {
+          "name": "StopButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Normal stop"
+        },
+        {
+          "name": "EmergencyStop",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Emergency stop"
+        },
+        {
+          "name": "FlameSensor",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Flame proven"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears lockout and fault"
+        },
+        {
+          "name": "PurgeFan",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Purge fan"
+        },
+        {
+          "name": "Igniter",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Ignition transformer"
+        },
+        {
+          "name": "FuelValve",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Fuel valve"
+        },
+        {
+          "name": "FlameOn",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Flame established"
+        },
+        {
+          "name": "Lockout",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Ignition lockout latched"
+        },
+        {
+          "name": "Fault",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Emergency fault latched"
+        }
+      ],
+      "en": "# Boiler Purge and Ignition Sequence\n\n- **Difficulty:** Hard (hard)\n- **POU:** `FB_C10`\n- **Primary axis:** `safety_logic`\n\n## Requirements\n\nA burner start is a supervised sequence. A rising edge of `StartButton` starts a 3 s purge with `PurgeFan`. After the purge, `Igniter` runs for 2 s. If `FlameSensor` becomes TRUE during ignition, open `FuelValve`, set `FlameOn` and turn the igniter OFF. If no flame is proven within 2 s, latch `Lockout` and stop the sequence.\n\nWhile firing, loss of flame latches `Lockout` and closes `FuelValve`. `StopButton` stops the burner without lockout. `EmergencyStop` stops the burner and latches `Fault`. `ResetButton` clears `Lockout` and `Fault` only when `StartButton` and `FlameSensor` are FALSE. `FuelValve` requires `FlameOn`; `Igniter` and `FuelValve` must never be TRUE together.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `StartButton` | `BOOL` | Burner start command |\n| Input | `StopButton` | `BOOL` | Normal stop |\n| Input | `EmergencyStop` | `BOOL` | Emergency stop |\n| Input | `FlameSensor` | `BOOL` | Flame proven |\n| Input | `ResetButton` | `BOOL` | Clears lockout and fault |\n| Output | `PurgeFan` | `BOOL` | Purge fan |\n| Output | `Igniter` | `BOOL` | Ignition transformer |\n| Output | `FuelValve` | `BOOL` | Fuel valve |\n| Output | `FlameOn` | `BOOL` | Flame established |\n| Output | `Lockout` | `BOOL` | Ignition lockout latched |\n| Output | `Fault` | `BOOL` | Emergency fault latched |\n"
+    },
+    {
+      "id": "C11",
+      "pou": "FB_C11",
+      "title": "Palletizer Layer Counting",
+      "difficulty": "hard",
+      "primary_axis": "sorting_filtering",
+      "diversity_tags": [
+        "counter",
+        "batching",
+        "timer",
+        "sorting",
+        "pallet"
+      ],
+      "rationale": "Palletizing combines product counting, layer formation and a full-pallet handshake; it is a realistic batching and filtering problem.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "RunSwitch",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Enables the conveyor"
+        },
+        {
+          "name": "BoxPresent",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Box at the palletizer infeed"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears counts and full-pallet state"
+        },
+        {
+          "name": "ConveyorMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Conveyor drive"
+        },
+        {
+          "name": "LayerPush",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Layer pusher"
+        },
+        {
+          "name": "BoxCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Boxes in the current layer"
+        },
+        {
+          "name": "LayerCount",
+          "dir": "output",
+          "type": "INT",
+          "desc": "Completed layers"
+        },
+        {
+          "name": "PalletFull",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Pallet complete"
+        }
+      ],
+      "en": "# Palletizer Layer Counting\n\n- **Difficulty:** Hard (hard)\n- **POU:** `FB_C11`\n- **Primary axis:** `sorting_filtering`\n\n## Requirements\n\nA palletizer receives boxes on a conveyor. A rising edge of `BoxPresent` while `RunSwitch` is TRUE and the pallet is not full counts one box. Every 3 boxes form a layer: increment `LayerCount`, pulse `LayerPush` for 1 s and reset the box count. When `LayerCount` reaches 2, set `PalletFull` and stop the conveyor. `ResetButton` clears the box count, layer count and `PalletFull`. The conveyor must stop while `LayerPush` is active.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `RunSwitch` | `BOOL` | Enables the conveyor |\n| Input | `BoxPresent` | `BOOL` | Box at the palletizer infeed |\n| Input | `ResetButton` | `BOOL` | Clears counts and full-pallet state |\n| Output | `ConveyorMotor` | `BOOL` | Conveyor drive |\n| Output | `LayerPush` | `BOOL` | Layer pusher |\n| Output | `BoxCount` | `INT` | Boxes in the current layer |\n| Output | `LayerCount` | `INT` | Completed layers |\n| Output | `PalletFull` | `BOOL` | Pallet complete |\n"
+    },
+    {
+      "id": "C12",
+      "pou": "FB_C12",
+      "title": "Safety Light Curtain Muting",
+      "difficulty": "hard",
+      "primary_axis": "safety_logic",
+      "diversity_tags": [
+        "safety_logic",
+        "muting",
+        "timer",
+        "edge_detection",
+        "fault_latch"
+      ],
+      "rationale": "Muting lets a pallet pass through a light curtain without tripping the safety stop, but only when two sensors confirm the correct sequence; a wrong sequence must alarm.",
+      "source": {
+        "source_type": "independent_conception",
+        "source_reference": "Original scenario created for this project; no external question text was copied.",
+        "synthesis_process": "Derived from standard industrial PLC control patterns (IEC 61131-3, safety interlocks, conveyor sequencing, batching and flame-proving sequences). The I/O list, timing and acceptance behaviour were written specifically for this assignment.",
+        "manual_modifications": "Reduced to a single function block with deterministic scan-cycle behaviour; no vendor-specific libraries or hardware dependencies.",
+        "review_process": "Internal design review against PLC realism: deterministic I/O, safe fail state, bounded timers, no unbounded loops, and testable behaviour at a 20 ms scan. Independent peer review is pending."
+      },
+      "interface": [
+        {
+          "name": "RunSwitch",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Enables the conveyor"
+        },
+        {
+          "name": "LightCurtain",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Light curtain blocked"
+        },
+        {
+          "name": "MutingSensor1",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "First muting sensor"
+        },
+        {
+          "name": "MutingSensor2",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Second muting sensor"
+        },
+        {
+          "name": "ResetButton",
+          "dir": "input",
+          "type": "BOOL",
+          "desc": "Clears safety stop and alarm"
+        },
+        {
+          "name": "ConveyorMotor",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Conveyor drive"
+        },
+        {
+          "name": "MutingActive",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Muting is active"
+        },
+        {
+          "name": "SafetyStop",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Safety stop latched"
+        },
+        {
+          "name": "Alarm",
+          "dir": "output",
+          "type": "BOOL",
+          "desc": "Muting alarm latched"
+        }
+      ],
+      "en": "# Safety Light Curtain Muting\n\n- **Difficulty:** Hard (hard)\n- **POU:** `FB_C12`\n- **Primary axis:** `safety_logic`\n\n## Requirements\n\nA conveyor is protected by `LightCurtain` (TRUE means blocked). If the curtain is blocked while muting is not active, latch `SafetyStop` and stop the conveyor. `ResetButton` clears `SafetyStop` and `Alarm` only when `LightCurtain` is FALSE.\n\nMuting requires a valid sequence: `MutingSensor1` must be activated first, then `MutingSensor2` within 2 s. A valid sequence activates `MutingActive` while both sensors remain TRUE. If `MutingSensor2` is activated without the sequence, or if the 2 s window expires, latch `Alarm`. The conveyor may run with the curtain blocked only while `MutingActive` is TRUE. `Alarm` also stops the conveyor.\n\n## Interface Definition\n\n| Direction | Variable/Field | Data Type | Description |\n| --- | --- | --- | --- |\n| Input | `RunSwitch` | `BOOL` | Enables the conveyor |\n| Input | `LightCurtain` | `BOOL` | Light curtain blocked |\n| Input | `MutingSensor1` | `BOOL` | First muting sensor |\n| Input | `MutingSensor2` | `BOOL` | Second muting sensor |\n| Input | `ResetButton` | `BOOL` | Clears safety stop and alarm |\n| Output | `ConveyorMotor` | `BOOL` | Conveyor drive |\n| Output | `MutingActive` | `BOOL` | Muting is active |\n| Output | `SafetyStop` | `BOOL` | Safety stop latched |\n| Output | `Alarm` | `BOOL` | Muting alarm latched |\n"
+    }
+  ]
+}
