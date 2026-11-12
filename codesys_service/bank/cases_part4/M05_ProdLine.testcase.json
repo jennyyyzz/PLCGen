@@ -1,0 +1,1360 @@
+{
+ "task_id": "M05_ProdLine",
+ "title": "Automated Production Line Control",
+ "pou": "M05_ProdLine",
+ "scan_ms": 20,
+ "interface": [
+  {
+   "name": "Mode",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "0 manual / 1 automatic"
+  },
+  {
+   "name": "ForwardButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "forward jog button"
+  },
+  {
+   "name": "ReverseButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "reverse jog button"
+  },
+  {
+   "name": "SensorA",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "sensor station A"
+  },
+  {
+   "name": "SensorB",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "sensor station B"
+  },
+  {
+   "name": "SensorC",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "sensor station C"
+  },
+  {
+   "name": "ButtonA",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "done button station A"
+  },
+  {
+   "name": "ButtonB",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "done button station B"
+  },
+  {
+   "name": "ButtonC",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "done button station C"
+  },
+  {
+   "name": "MotorForward",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "motor forward"
+  },
+  {
+   "name": "MotorReverse",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "motor reverse"
+  },
+  {
+   "name": "CompletionLight",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "completion light"
+  }
+ ],
+ "cases": [
+  {
+   "id": "TC01",
+   "name": "Manual mode jog with interlock",
+   "coverage": "forward, reverse, both pressed -> both OFF, release -> stop, light OFF in manual",
+   "initial_state": "power-up, Mode=0 (manual), all inputs FALSE",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "idle manual, all OFF"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 1,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "forward button -> forward"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "released -> stop (jog, no latching)"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 1,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 1,
+      "CompletionLight": 0
+     },
+     "check": "reverse button -> reverse"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 1,
+      "ReverseButton": 1,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "both pressed -> interlock, both OFF"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 1,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 1,
+      "CompletionLight": 0
+     },
+     "check": "forward released -> reverse again"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "all released -> stop"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "auto-mode signals have no effect in manual"
+    }
+   ]
+  },
+  {
+   "id": "TC02",
+   "name": "Automatic full cycle",
+   "coverage": "A->B->C sequence, motor stops on arrival, light ON after ButtonC, light OFF when product removed",
+   "initial_state": "power-up, Mode=1 (auto), product not yet at A",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "auto idle, nothing moves"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "product at A, waiting for ButtonA"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "ButtonA -> motor forward (trigger cycle)"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "product left A, still moving"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "arrived at B -> motor stops"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "waiting for ButtonB"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "ButtonB -> motor forward (trigger cycle)"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "moving B->C"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "arrived at C -> motor stops"
+    },
+    {
+     "cycle": 11,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 1
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 1
+     },
+     "check": "ButtonC -> completion light ON"
+    },
+    {
+     "cycle": 12,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 1
+     },
+     "check": "light stays ON while product present"
+    },
+    {
+     "cycle": 13,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "product removed -> light OFF"
+    },
+    {
+     "cycle": 14,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "next product can start a new cycle (trigger cycle)"
+    },
+    {
+     "cycle": 15,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    }
+   ]
+  },
+  {
+   "id": "TC03",
+   "name": "Automatic mode ignores wrong signals",
+   "coverage": "ButtonA without product, buttons at wrong station, manual buttons in auto, no reverse in auto",
+   "initial_state": "power-up, Mode=1",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "ButtonA without product at A -> nothing"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 1,
+      "ReverseButton": 1,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "manual buttons ignored in auto"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 1
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "wrong buttons at A -> nothing"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "correct button starts (trigger cycle)"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "at B"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 1
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "wrong buttons at B -> stays stopped"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "correct button continues (trigger cycle)"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "at C, no light before ButtonC"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 1,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "wrong buttons at C -> no light"
+    }
+   ]
+  },
+  {
+   "id": "TC04",
+   "name": "Mode switch during automatic cycle",
+   "coverage": "switching to manual stops automatic motion; manual jog works; returning to automatic resumes the stored step",
+   "initial_state": "power-up, Mode=1",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "auto start (trigger cycle)"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "motor starts in the following cycle"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "moving"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "switch to manual -> motor stops"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 1,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 1,
+      "CompletionLight": 0
+     },
+     "check": "manual reverse works"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 0,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0,
+      "CompletionLight": 0
+     },
+     "check": "released"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorReverse": 0
+     },
+     "check": "back to automatic: the reference implementation keeps its internal step, so the interrupted move resumes (resume-vs-restart is not fixed by the requirement)"
+    }
+   ]
+  },
+  {
+   "id": "TC05",
+   "name": "A station button held in advance does not release the carriage",
+   "coverage": "edge-triggered station buttons: ButtonB pressed before station B is reached must not start the next leg; outputs follow a transition one scan later",
+   "initial_state": "auto mode, carriage at A (SensorA), step 0",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0,
+      "MotorReverse": 0
+     },
+     "check": "waiting at A"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "ButtonA edge: transition to the travelling step, output next scan"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1
+     },
+     "check": "travelling to B; ButtonB is pressed early and held from here on"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1
+     },
+     "check": "still travelling, both buttons held"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "arrived at B: motor stops"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "DECISIVE: ButtonB was already held on arrival, so it has no rising edge and the carriage must stay at B"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "still held: still waiting"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "released, still waiting"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "fresh ButtonB edge: transition, output next scan"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1
+     },
+     "check": "now travelling to C"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "arrived at C"
+    }
+   ]
+  },
+  {
+   "id": "TC06",
+   "name": "Station sensors held while the operator works at the station",
+   "coverage": "station sensor held TRUE across the whole processing time: the motor stays stopped, holding the button does not advance, and the carriage leaves only once the operator confirms",
+   "initial_state": "auto mode, carriage at A (SensorA), step 0",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "product at A, waiting"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "sensor held, no button: still waiting, nothing latches spuriously"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "ButtonA edge: transition taken this cycle"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 1,
+      "SensorB": 0,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1
+     },
+     "check": "motor now drives the product away, though SensorA is still TRUE. A level implementation that re-checks SensorA would stall here"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "arrives at B: motor stops"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "SensorB held for many cycles: the motor must stay stopped"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 1,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "still held, and ButtonA is the wrong button: no movement"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "ButtonB edge: transition to the travelling step"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 1,
+      "SensorC": 0,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 1
+     },
+     "check": "motor runs although SensorB is still TRUE"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 1,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "arrives at C: motor stops"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "Mode": 1,
+      "ForwardButton": 0,
+      "ReverseButton": 0,
+      "SensorA": 0,
+      "SensorB": 0,
+      "SensorC": 1,
+      "ButtonA": 0,
+      "ButtonB": 0,
+      "ButtonC": 0
+     },
+     "expect": {
+      "MotorForward": 0
+     },
+     "check": "SensorC held: motor stays stopped until the product is collected"
+    }
+   ]
+  }
+ ],
+ "notes": "Confirmation buttons are edge-triggered (aligned with the Part-2 reference implementation)."
+}

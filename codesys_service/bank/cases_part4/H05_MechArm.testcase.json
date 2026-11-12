@@ -1,0 +1,4411 @@
+{
+ "task_id": "H05_MechArm",
+ "title": "Mechanical Arm Control",
+ "pou": "H05_MechArm",
+ "scan_ms": 20,
+ "interface": [
+  {
+   "name": "ManualMode",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "ManualMode"
+  },
+  {
+   "name": "SingleStepMode",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "SingleStepMode"
+  },
+  {
+   "name": "SingleCycleMode",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "SingleCycleMode"
+  },
+  {
+   "name": "ContinuousMode",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "ContinuousMode"
+  },
+  {
+   "name": "EmergencyStop",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "EmergencyStop"
+  },
+  {
+   "name": "Start",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "Start"
+  },
+  {
+   "name": "DownButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "DownButton"
+  },
+  {
+   "name": "UpButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "UpButton"
+  },
+  {
+   "name": "LeftButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "LeftButton"
+  },
+  {
+   "name": "RightButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "RightButton"
+  },
+  {
+   "name": "GripButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "GripButton"
+  },
+  {
+   "name": "ReleaseButton",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "ReleaseButton"
+  },
+  {
+   "name": "DownLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "DownLimitSwitch"
+  },
+  {
+   "name": "UpLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "UpLimitSwitch"
+  },
+  {
+   "name": "LeftLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "LeftLimitSwitch"
+  },
+  {
+   "name": "RightLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "RightLimitSwitch"
+  },
+  {
+   "name": "GripLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "GripLimitSwitch"
+  },
+  {
+   "name": "ReleaseLimitSwitch",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "ReleaseLimitSwitch"
+  },
+  {
+   "name": "MoveDown",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "MoveDown"
+  },
+  {
+   "name": "MoveUp",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "MoveUp"
+  },
+  {
+   "name": "MoveLeft",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "MoveLeft"
+  },
+  {
+   "name": "MoveRight",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "MoveRight"
+  },
+  {
+   "name": "ActivateGrip",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "ActivateGrip"
+  },
+  {
+   "name": "ActivateRelease",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "ActivateRelease"
+  }
+ ],
+ "cases": [
+  {
+   "id": "TC01",
+   "name": "Manual mode: each button moves until its limit switch",
+   "coverage": "button pressed & not in position -> move; in position -> no move; release -> stop; all six actions; Start ignored",
+   "initial_state": "power-up, EmergencyStop=1 (inactive), ManualMode=1, arm at home (top-left, released)",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "no button -> no motion"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "DownButton, not at down limit -> MoveDown"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "still moving down (up switch released)"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down limit reached -> stop although button held"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "button released"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 1,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "UpButton -> MoveUp"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "button released mid-way -> stop"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 1,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "UpButton at up limit -> no motion"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 1,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "RightButton, not at right limit -> MoveRight"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 1,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "LeftButton at left limit -> no motion"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 1,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "GripButton, not gripped -> ActivateGrip"
+    },
+    {
+     "cycle": 11,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 1,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "ReleaseButton while already released -> no action"
+    },
+    {
+     "cycle": 12,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 1,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "ReleaseButton while gripped -> ActivateRelease"
+    },
+    {
+     "cycle": 13,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start has no effect in manual mode"
+    }
+   ]
+  },
+  {
+   "id": "TC02",
+   "name": "Single-step mode: one action per Start press",
+   "coverage": "eight actions each started by Start, each stops at its limit and waits; Start held does not start the next action",
+   "initial_state": "power-up, SingleStepMode=1, arm at home",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> down begins"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: moving, Start released"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> grip begins"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip: moving, Start released"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip: in motion"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "grip limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> up begins"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: moving, Start released"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 11,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 12,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> right begins"
+    },
+    {
+     "cycle": 13,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right: moving, Start released"
+    },
+    {
+     "cycle": 14,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right: in motion"
+    },
+    {
+     "cycle": 15,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 16,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> down begins"
+    },
+    {
+     "cycle": 17,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: moving, Start released"
+    },
+    {
+     "cycle": 18,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 19,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 20,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "Start -> release begins"
+    },
+    {
+     "cycle": 21,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release: moving, Start released"
+    },
+    {
+     "cycle": 22,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release: in motion"
+    },
+    {
+     "cycle": 23,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "release limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 24,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> up begins"
+    },
+    {
+     "cycle": 25,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: moving, Start released"
+    },
+    {
+     "cycle": 26,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 27,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up limit reached -> stop, wait for Start"
+    },
+    {
+     "cycle": 28,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> left begins"
+    },
+    {
+     "cycle": 29,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left: moving, Start released"
+    },
+    {
+     "cycle": 30,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left: in motion"
+    },
+    {
+     "cycle": 31,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left limit reached -> stop, wait for Start"
+    }
+   ]
+  },
+  {
+   "id": "TC03",
+   "name": "Single-cycle mode: one Start runs the whole cycle and stops at home",
+   "coverage": "automatic chaining of all eight actions, stops at home, waits for Start",
+   "initial_state": "power-up, SingleCycleMode=1, arm at home",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> down begins"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: moving, Start released"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0
+     },
+     "check": "down limit reached -> completed action stops"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "next action ActivateGrip is running (same or next cycle)"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip begins automatically"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip: in motion"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0
+     },
+     "check": "grip limit reached -> completed action stops"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveUp is running (same or next cycle)"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up begins automatically"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 11,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveUp": 0
+     },
+     "check": "up limit reached -> completed action stops"
+    },
+    {
+     "cycle": 12,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveRight is running (same or next cycle)"
+    },
+    {
+     "cycle": 13,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right begins automatically"
+    },
+    {
+     "cycle": 14,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right: in motion"
+    },
+    {
+     "cycle": 15,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveRight": 0
+     },
+     "check": "right limit reached -> completed action stops"
+    },
+    {
+     "cycle": 16,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveDown is running (same or next cycle)"
+    },
+    {
+     "cycle": 17,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down begins automatically"
+    },
+    {
+     "cycle": 18,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 19,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0
+     },
+     "check": "down limit reached -> completed action stops"
+    },
+    {
+     "cycle": 20,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "next action ActivateRelease is running (same or next cycle)"
+    },
+    {
+     "cycle": 21,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release begins automatically"
+    },
+    {
+     "cycle": 22,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release: in motion"
+    },
+    {
+     "cycle": 23,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "ActivateRelease": 0
+     },
+     "check": "release limit reached -> completed action stops"
+    },
+    {
+     "cycle": 24,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveUp is running (same or next cycle)"
+    },
+    {
+     "cycle": 25,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up begins automatically"
+    },
+    {
+     "cycle": 26,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 27,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveUp": 0
+     },
+     "check": "up limit reached -> completed action stops"
+    },
+    {
+     "cycle": 28,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveLeft is running (same or next cycle)"
+    },
+    {
+     "cycle": 29,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left begins automatically"
+    },
+    {
+     "cycle": 30,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left: in motion"
+    },
+    {
+     "cycle": 31,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left limit reached -> cycle end"
+    },
+    {
+     "cycle": 32,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "back at home: stays stopped (single cycle)"
+    },
+    {
+     "cycle": 33,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "still stopped without Start"
+    },
+    {
+     "cycle": 34,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "new Start -> next cycle begins"
+    }
+   ]
+  },
+  {
+   "id": "TC04",
+   "name": "Continuous mode: cycles repeat without Start",
+   "coverage": "after the last action the next cycle starts automatically",
+   "initial_state": "power-up, ContinuousMode=1, arm at home",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> down begins"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: moving, Start released"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0
+     },
+     "check": "down limit reached -> completed action stops"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "next action ActivateGrip is running (same or next cycle)"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip begins automatically"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 1,
+      "ActivateRelease": 0
+     },
+     "check": "grip: in motion"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0
+     },
+     "check": "grip limit reached -> completed action stops"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveUp is running (same or next cycle)"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up begins automatically"
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 11,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveUp": 0
+     },
+     "check": "up limit reached -> completed action stops"
+    },
+    {
+     "cycle": 12,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveRight is running (same or next cycle)"
+    },
+    {
+     "cycle": 13,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right begins automatically"
+    },
+    {
+     "cycle": 14,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 1,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "right: in motion"
+    },
+    {
+     "cycle": 15,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveRight": 0
+     },
+     "check": "right limit reached -> completed action stops"
+    },
+    {
+     "cycle": 16,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveDown is running (same or next cycle)"
+    },
+    {
+     "cycle": 17,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down begins automatically"
+    },
+    {
+     "cycle": 18,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "down: in motion"
+    },
+    {
+     "cycle": 19,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0
+     },
+     "check": "down limit reached -> completed action stops"
+    },
+    {
+     "cycle": 20,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "next action ActivateRelease is running (same or next cycle)"
+    },
+    {
+     "cycle": 21,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release begins automatically"
+    },
+    {
+     "cycle": 22,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 1
+     },
+     "check": "release: in motion"
+    },
+    {
+     "cycle": 23,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "ActivateRelease": 0
+     },
+     "check": "release limit reached -> completed action stops"
+    },
+    {
+     "cycle": 24,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveUp is running (same or next cycle)"
+    },
+    {
+     "cycle": 25,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up begins automatically"
+    },
+    {
+     "cycle": 26,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 1,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "up: in motion"
+    },
+    {
+     "cycle": 27,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveUp": 0
+     },
+     "check": "up limit reached -> completed action stops"
+    },
+    {
+     "cycle": 28,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 1,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveLeft is running (same or next cycle)"
+    },
+    {
+     "cycle": 29,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left begins automatically"
+    },
+    {
+     "cycle": 30,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 1,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "left: in motion"
+    },
+    {
+     "cycle": 31,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveLeft": 0
+     },
+     "check": "left limit reached -> completed action stops"
+    },
+    {
+     "cycle": 32,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "next action MoveDown is running (same or next cycle)"
+    },
+    {
+     "cycle": 33,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "second cycle running without Start"
+    }
+   ]
+  },
+  {
+   "id": "TC05",
+   "name": "Emergency stop in automatic and manual modes",
+   "coverage": "all outputs OFF immediately, stay OFF while estop active, no automatic resume, manual buttons blocked",
+   "initial_state": "power-up, SingleCycleMode=1, arm at home",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "start cycle"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "moving down"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 0,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "ESTOP -> all outputs OFF"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 0,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start during estop ignored"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "estop released -> no automatic resume"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 0,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "manual button during estop -> no motion"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 1,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "estop released: manual works again"
+    }
+   ]
+  },
+  {
+   "id": "TC06",
+   "name": "Automatic modes wait for Start; manual buttons ignored",
+   "coverage": "no motion without Start in single-step/single-cycle/continuous; manual buttons ignored in auto modes",
+   "initial_state": "power-up, arm at home",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "single-step idle"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 1,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 1,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "single-cycle idle, manual button ignored"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 1,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 0,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "continuous idle, manual button ignored"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 0,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 1,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 1,
+      "LeftLimitSwitch": 1,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 1
+     },
+     "expect": {
+      "MoveDown": 1,
+      "MoveUp": 0,
+      "MoveLeft": 0,
+      "MoveRight": 0,
+      "ActivateGrip": 0,
+      "ActivateRelease": 0
+     },
+     "check": "Start -> continuous cycle begins"
+    }
+   ]
+  },
+  {
+   "id": "TC07",
+   "name": "Single-step mode: one Start press performs exactly one action",
+   "coverage": "single-step mode is edge-triggered on Start; after an action completes the arm must wait for a new Start edge. This case fails on Part 2's reference implementation (DEFECT-H05-01)",
+   "initial_state": "single-step mode, e-stop released, arm idle at step 0",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1
+     },
+     "check": "Start edge -> action 1: move down"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 0,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 1
+     },
+     "check": "Start released, action 1 continues"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "MoveDown": 0
+     },
+     "check": "down limit reached: action 1 finished"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0
+     },
+     "check": "DECISIVE: no new Start edge, so the arm must wait. Action 2 (grip) must not begin"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0
+     },
+     "check": "still waiting: one Start press, one action"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0
+     },
+     "check": "still waiting, no unattended progression"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 1
+     },
+     "check": "a fresh Start edge now performs action 2: grip"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 1,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 0,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 1
+     },
+     "check": "grip continues while Start is held"
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "ManualMode": 0,
+      "SingleStepMode": 1,
+      "SingleCycleMode": 0,
+      "ContinuousMode": 0,
+      "EmergencyStop": 1,
+      "Start": 0,
+      "DownButton": 0,
+      "UpButton": 0,
+      "LeftButton": 0,
+      "RightButton": 0,
+      "GripButton": 0,
+      "ReleaseButton": 0,
+      "DownLimitSwitch": 1,
+      "UpLimitSwitch": 0,
+      "LeftLimitSwitch": 0,
+      "RightLimitSwitch": 0,
+      "GripLimitSwitch": 1,
+      "ReleaseLimitSwitch": 0
+     },
+     "expect": {
+      "ActivateGrip": 0,
+      "MoveUp": 0
+     },
+     "check": "grip limit reached: action 2 finished, and no new Start edge, so action 3 must not begin"
+    }
+   ]
+  }
+ ]
+}

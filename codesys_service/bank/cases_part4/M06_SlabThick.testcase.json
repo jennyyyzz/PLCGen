@@ -1,0 +1,654 @@
+{
+ "task_id": "M06_SlabThick",
+ "title": "Slab Thickness Alarm and Fault History",
+ "pou": "M06_SlabThick",
+ "scan_ms": 20,
+ "interface": [
+  {
+   "name": "THICKNESS_FAULT",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "thickness deviation exceeds tolerance"
+  },
+  {
+   "name": "THICKNESS_SIGNAL_VALID",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "thickness-signal validity"
+  },
+  {
+   "name": "CUTTING_RUN",
+   "dir": "input",
+   "type": "BOOL",
+   "desc": "cutting equipment running"
+  },
+  {
+   "name": "FaultTimestamp",
+   "dir": "input",
+   "type": "DINT",
+   "desc": "current timestamp in seconds"
+  },
+  {
+   "name": "CycleTime",
+   "dir": "input",
+   "type": "TIME",
+   "desc": "elapsed interval of this invocation (ms)"
+  },
+  {
+   "name": "THICKNESS_ALARM",
+   "dir": "output",
+   "type": "BOOL",
+   "desc": "alarm with 500 ms minimum hold"
+  },
+  {
+   "name": "Slab_Fault_Counter",
+   "dir": "output",
+   "type": "UINT",
+   "desc": "number of valid fault occurrences"
+  },
+  {
+   "name": "Slab_Runtime_Accumulator",
+   "dir": "output",
+   "type": "LTIME",
+   "desc": "accumulated normal-cutting runtime (ns)"
+  },
+  {
+   "name": "Slab_Fault_History[0]",
+   "dir": "output",
+   "type": "DINT",
+   "desc": "newest fault timestamp"
+  },
+  {
+   "name": "Slab_Fault_History[1]",
+   "dir": "output",
+   "type": "DINT",
+   "desc": "2nd newest"
+  },
+  {
+   "name": "Slab_Fault_History[2]",
+   "dir": "output",
+   "type": "DINT",
+   "desc": "3rd newest"
+  },
+  {
+   "name": "Slab_Fault_History[3]",
+   "dir": "output",
+   "type": "DINT",
+   "desc": "4th newest"
+  },
+  {
+   "name": "Slab_Fault_History[4]",
+   "dir": "output",
+   "type": "DINT",
+   "desc": "oldest retained"
+  }
+ ],
+ "cases": [
+  {
+   "id": "TC01",
+   "name": "Alarm with 500 ms minimum hold",
+   "coverage": "alarm on at the fault edge, held 500 ms after the fault clears, off afterwards",
+   "initial_state": "power-up: alarm off, counter 0, runtime 0, history zero",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0,
+      "Slab_Fault_Counter": 0,
+      "Slab_Runtime_Accumulator": 0,
+      "Slab_Fault_History[0]": 0,
+      "Slab_Fault_History[1]": 0,
+      "Slab_Fault_History[2]": 0,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "power-up"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 1000,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1,
+      "Slab_Fault_Counter": 1
+     },
+     "check": "fault -> alarm, counted"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1
+     },
+     "check": "fault cleared, still within the 500 ms hold",
+     "hold_ms": 300
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0
+     },
+     "check": "500 ms elapsed -> alarm released",
+     "hold_ms": 400
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0,
+      "Slab_Fault_Counter": 1
+     },
+     "check": "stays off"
+    }
+   ]
+  },
+  {
+   "id": "TC02",
+   "name": "Alarm stays active while the fault persists",
+   "coverage": "long fault keeps the alarm on, no repeated counting",
+   "initial_state": "power-up",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 2000,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1,
+      "Slab_Fault_Counter": 1
+     },
+     "check": "fault"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1,
+      "Slab_Fault_Counter": 1
+     },
+     "check": "persists, not counted again",
+     "hold_ms": 2000
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1
+     },
+     "check": "cleared, hold starts",
+     "hold_ms": 200
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0
+     },
+     "check": "released",
+     "hold_ms": 500
+    }
+   ]
+  },
+  {
+   "id": "TC03",
+   "name": "Fault counting and history shifting",
+   "coverage": "one count per rising edge, newest at index 0, oldest dropped",
+   "initial_state": "power-up",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 101,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 1,
+      "Slab_Fault_History[0]": 101,
+      "Slab_Fault_History[1]": 0,
+      "Slab_Fault_History[2]": 0,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "fault 1"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 1
+     },
+     "check": "cleared",
+     "hold_ms": 600
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 202,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 2,
+      "Slab_Fault_History[0]": 202,
+      "Slab_Fault_History[1]": 101,
+      "Slab_Fault_History[2]": 0,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "fault 2"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 2,
+      "Slab_Fault_History[0]": 202,
+      "Slab_Fault_History[1]": 101
+     },
+     "check": "fault cleared: counter and history unchanged (no record without a rising edge)",
+     "hold_ms": 600
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 303,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 3,
+      "Slab_Fault_History[0]": 303,
+      "Slab_Fault_History[1]": 202,
+      "Slab_Fault_History[2]": 101,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "fault 3"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 3,
+      "Slab_Fault_History[0]": 303,
+      "Slab_Fault_History[1]": 202,
+      "Slab_Fault_History[2]": 101
+     },
+     "check": "fault cleared: counter and history unchanged (no record without a rising edge)",
+     "hold_ms": 600
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 404,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 4,
+      "Slab_Fault_History[0]": 404,
+      "Slab_Fault_History[1]": 303,
+      "Slab_Fault_History[2]": 202,
+      "Slab_Fault_History[3]": 101,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "fault 4"
+    },
+    {
+     "cycle": 7,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 4,
+      "Slab_Fault_History[0]": 404,
+      "Slab_Fault_History[1]": 303,
+      "Slab_Fault_History[2]": 202,
+      "Slab_Fault_History[3]": 101
+     },
+     "check": "fault cleared: counter and history unchanged (no record without a rising edge)",
+     "hold_ms": 600
+    },
+    {
+     "cycle": 8,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 505,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 5,
+      "Slab_Fault_History[0]": 505,
+      "Slab_Fault_History[1]": 404,
+      "Slab_Fault_History[2]": 303,
+      "Slab_Fault_History[3]": 202,
+      "Slab_Fault_History[4]": 101
+     },
+     "check": "fault 5: history full"
+    },
+    {
+     "cycle": 9,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 5,
+      "Slab_Fault_History[0]": 505,
+      "Slab_Fault_History[1]": 404,
+      "Slab_Fault_History[2]": 303,
+      "Slab_Fault_History[3]": 202,
+      "Slab_Fault_History[4]": 101
+     },
+     "check": "fault cleared: counter and history unchanged (no record without a rising edge)",
+     "hold_ms": 600
+    },
+    {
+     "cycle": 10,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 606,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 6,
+      "Slab_Fault_History[0]": 606,
+      "Slab_Fault_History[1]": 505,
+      "Slab_Fault_History[2]": 404,
+      "Slab_Fault_History[3]": 303,
+      "Slab_Fault_History[4]": 202
+     },
+     "check": "fault 6: oldest dropped"
+    }
+   ]
+  },
+  {
+   "id": "TC04",
+   "name": "Runtime accumulates only during normal cutting",
+   "coverage": "accumulates when running and fault-free, preserved otherwise",
+   "initial_state": "power-up; CycleTime=1000 ms",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 1000
+     },
+     "check": "cutting"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 2000
+     },
+     "check": "accumulates"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 2000
+     },
+     "check": "stopped -> preserved"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 10,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 2000
+     },
+     "check": "fault -> not accumulated"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 3000
+     },
+     "check": "fault cleared -> accumulates"
+    },
+    {
+     "cycle": 5,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 0,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 3000
+     },
+     "check": "invalid signal -> not accumulated"
+    },
+    {
+     "cycle": 6,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 1,
+      "FaultTimestamp": 0,
+      "CycleTime": 1000
+     },
+     "expect": {
+      "Slab_Runtime_Accumulator": 4000
+     },
+     "check": "valid again"
+    }
+   ]
+  },
+  {
+   "id": "TC05",
+   "name": "Invalid signal clears the alarm and blocks recording",
+   "coverage": "alarm off while invalid, nothing counted or recorded",
+   "initial_state": "power-up",
+   "steps": [
+    {
+     "cycle": 0,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 11,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 1,
+      "Slab_Fault_Counter": 1,
+      "Slab_Fault_History[0]": 11,
+      "Slab_Fault_History[1]": 0,
+      "Slab_Fault_History[2]": 0,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "fault recorded"
+    },
+    {
+     "cycle": 1,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 0,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0,
+      "Slab_Fault_Counter": 1
+     },
+     "check": "invalid -> alarm off"
+    },
+    {
+     "cycle": 2,
+     "inputs": {
+      "THICKNESS_FAULT": 1,
+      "THICKNESS_SIGNAL_VALID": 0,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 22,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 1,
+      "Slab_Fault_History[0]": 11,
+      "Slab_Fault_History[1]": 0,
+      "Slab_Fault_History[2]": 0,
+      "Slab_Fault_History[3]": 0,
+      "Slab_Fault_History[4]": 0
+     },
+     "check": "still invalid: not counted"
+    },
+    {
+     "cycle": 3,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 0,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "THICKNESS_ALARM": 0
+     },
+     "check": "still invalid"
+    },
+    {
+     "cycle": 4,
+     "inputs": {
+      "THICKNESS_FAULT": 0,
+      "THICKNESS_SIGNAL_VALID": 1,
+      "CUTTING_RUN": 0,
+      "FaultTimestamp": 0,
+      "CycleTime": 100
+     },
+     "expect": {
+      "Slab_Fault_Counter": 1
+     },
+     "check": "valid again with no fault: nothing counted (alarm hold state is implementation-defined)"
+    }
+   ]
+  }
+ ],
+ "notes": "Alarm hold uses a TOF (wall-clock), matching the Part-2 reference; runtime compared in ms."
+}

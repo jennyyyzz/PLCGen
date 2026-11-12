@@ -1,0 +1,417 @@
+{
+  "task_id": "E03_Hysteresis",
+  "title": "Alarm Handling",
+  "pou": "E03_Hysteresis",
+  "scan_ms": 20,
+  "interface": [
+    {
+      "name": "Value",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Input value"
+    },
+    {
+      "name": "hiLevel",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "High limit alarm value"
+    },
+    {
+      "name": "loLevel",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Low limit alarm value"
+    },
+    {
+      "name": "hystWindow",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Hysteresis window"
+    },
+    {
+      "name": "hiAlarm",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "High limit alarm"
+    },
+    {
+      "name": "loAlarm",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Low limit alarm"
+    },
+    {
+      "name": "error",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "TRUE: error occurred"
+    },
+    {
+      "name": "status",
+      "dir": "output",
+      "type": "WORD",
+      "desc": "Status code (32769=16#8001, 32770=16#8002)"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "High alarm with hysteresis",
+      "coverage": "trigger above hiLevel, hold inside window, boundary Value=hiLevel-hystWindow, release, Value=hiLevel does not trigger",
+      "initial_state": "power-up, all outputs FALSE/0; hiLevel=80, loLevel=20, hystWindow=5",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 0,
+            "loAlarm": 0,
+            "error": 0,
+            "status": 0
+          },
+          "check": "normal range, no alarm"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Value": 85,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 1,
+            "loAlarm": 0
+          },
+          "check": "Value>hiLevel triggers hiAlarm"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Value": 78,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 1
+          },
+          "check": "inside hysteresis window, alarm held"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Value": 75,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 1
+          },
+          "check": "Value=hiLevel-hystWindow is not < 75, alarm held"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "Value": 74,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 0
+          },
+          "check": "Value<hiLevel-hystWindow releases hiAlarm"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "Value": 80,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 0
+          },
+          "check": "Value=hiLevel is not > hiLevel, no re-trigger"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "Value": 81,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 1
+          },
+          "check": "Value>hiLevel re-triggers"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Low alarm with hysteresis",
+      "coverage": "trigger below loLevel, hold inside window, boundary Value=loLevel+hystWindow, release, Value=loLevel does not trigger",
+      "initial_state": "power-up; hiLevel=80, loLevel=20, hystWindow=5",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "hiAlarm": 0,
+            "loAlarm": 0,
+            "error": 0,
+            "status": 0
+          },
+          "check": "normal range"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Value": 15,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 1,
+            "hiAlarm": 0
+          },
+          "check": "Value<loLevel triggers loAlarm"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Value": 22,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 1
+          },
+          "check": "inside window, alarm held"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Value": 25,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 1
+          },
+          "check": "Value=loLevel+hystWindow is not > 25, alarm held"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "Value": 26,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 0
+          },
+          "check": "Value>loLevel+hystWindow releases loAlarm"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "Value": 20,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 0
+          },
+          "check": "Value=loLevel is not < loLevel, no re-trigger"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "Value": 19,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "loAlarm": 1
+          },
+          "check": "Value<loLevel re-triggers"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Error 16#8001: loLevel >= hiLevel",
+      "coverage": "loLevel>hiLevel, loLevel=hiLevel boundary, 8001 has priority over 8002",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 20,
+            "loLevel": 80,
+            "hystWindow": 5
+          },
+          "expect": {
+            "error": 1,
+            "status": 32769
+          },
+          "check": "loLevel>hiLevel -> 16#8001"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 50,
+            "loLevel": 50,
+            "hystWindow": 5
+          },
+          "expect": {
+            "error": 1,
+            "status": 32769
+          },
+          "check": "loLevel=hiLevel -> 16#8001"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 20,
+            "loLevel": 80,
+            "hystWindow": 100
+          },
+          "expect": {
+            "error": 1,
+            "status": 32769
+          },
+          "check": "both conditions violated: 16#8001 takes priority"
+        }
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "Error 16#8002: hysteresis window too large",
+      "coverage": "hystWindow > range, hystWindow = range boundary, hystWindow just below range is valid",
+      "initial_state": "power-up; hiLevel=80, loLevel=20 (range 60)",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 70
+          },
+          "expect": {
+            "error": 1,
+            "status": 32770
+          },
+          "check": "hystWindow>60 -> 16#8002"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 60
+          },
+          "expect": {
+            "error": 1,
+            "status": 32770
+          },
+          "check": "hystWindow=60 (boundary) -> 16#8002"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 59
+          },
+          "expect": {
+            "error": 0,
+            "status": 0
+          },
+          "check": "hystWindow=59 is valid"
+        }
+      ]
+    },
+    {
+      "id": "TC05",
+      "name": "Recovery after parameter error",
+      "coverage": "error clears when parameters are corrected, alarm logic works again",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 20,
+            "loLevel": 80,
+            "hystWindow": 5
+          },
+          "expect": {
+            "error": 1,
+            "status": 32769
+          },
+          "check": "invalid limits"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Value": 50,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "error": 0,
+            "status": 0,
+            "hiAlarm": 0,
+            "loAlarm": 0
+          },
+          "check": "limits corrected, error cleared"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Value": 90,
+            "hiLevel": 80,
+            "loLevel": 20,
+            "hystWindow": 5
+          },
+          "expect": {
+            "error": 0,
+            "status": 0,
+            "hiAlarm": 1
+          },
+          "check": "alarm logic active again"
+        }
+      ]
+    }
+  ]
+}
