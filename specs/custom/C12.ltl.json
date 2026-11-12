@@ -1,0 +1,82 @@
+{
+  "task_id": "C12",
+  "title": "Safety Light Curtain Muting",
+  "pou": "FB_C12",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "RunSwitch",
+      "kind": "input",
+      "expression": "RunSwitch",
+      "meaning": "Conveyor enabled"
+    },
+    {
+      "id": "LightCurtain",
+      "kind": "input",
+      "expression": "LightCurtain",
+      "meaning": "Curtain blocked"
+    },
+    {
+      "id": "MutingSensor1",
+      "kind": "input",
+      "expression": "MutingSensor1",
+      "meaning": "Sensor 1 active"
+    },
+    {
+      "id": "MutingSensor2",
+      "kind": "input",
+      "expression": "MutingSensor2",
+      "meaning": "Sensor 2 active"
+    },
+    {
+      "id": "ConveyorMotor",
+      "kind": "output",
+      "expression": "ConveyorMotor",
+      "meaning": "Conveyor running"
+    },
+    {
+      "id": "MutingActive",
+      "kind": "output",
+      "expression": "MutingActive",
+      "meaning": "Muting active"
+    },
+    {
+      "id": "SafetyStop",
+      "kind": "output",
+      "expression": "SafetyStop",
+      "meaning": "Safety stop latched"
+    },
+    {
+      "id": "Alarm",
+      "kind": "output",
+      "expression": "Alarm",
+      "meaning": "Alarm latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Curtain stops the conveyor",
+      "formula": "G((LightCurtain ∧ ¬MutingActive) → SafetyStop)",
+      "rationale": "A blocked curtain without muting must latch a safety stop."
+    },
+    {
+      "id": "P2",
+      "name": "Safety stop stops the conveyor",
+      "formula": "G(SafetyStop → ¬ConveyorMotor)",
+      "rationale": "The conveyor must not run while the safety stop is latched."
+    },
+    {
+      "id": "P3",
+      "name": "Valid sequence activates muting",
+      "formula": "G((MutingSensor1 ∧ X MutingSensor2) → F MutingActive)",
+      "rationale": "The correct two-sensor order eventually enables muting."
+    }
+  ]
+}

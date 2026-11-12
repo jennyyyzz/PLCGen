@@ -1,0 +1,88 @@
+{
+  "task_id": "C09",
+  "title": "Conveyor Zone Accumulation",
+  "pou": "FB_C09",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "RunSwitch",
+      "kind": "input",
+      "expression": "RunSwitch",
+      "meaning": "Line enabled"
+    },
+    {
+      "id": "Zone1Sensor",
+      "kind": "input",
+      "expression": "Zone1Sensor",
+      "meaning": "Part in zone 1"
+    },
+    {
+      "id": "Zone2Sensor",
+      "kind": "input",
+      "expression": "Zone2Sensor",
+      "meaning": "Part in zone 2"
+    },
+    {
+      "id": "Zone3Sensor",
+      "kind": "input",
+      "expression": "Zone3Sensor",
+      "meaning": "Part in zone 3"
+    },
+    {
+      "id": "Zone1Motor",
+      "kind": "output",
+      "expression": "Zone1Motor",
+      "meaning": "Zone 1 motor"
+    },
+    {
+      "id": "Zone2Motor",
+      "kind": "output",
+      "expression": "Zone2Motor",
+      "meaning": "Zone 2 motor"
+    },
+    {
+      "id": "Zone3Motor",
+      "kind": "output",
+      "expression": "Zone3Motor",
+      "meaning": "Zone 3 motor"
+    },
+    {
+      "id": "Zone1Full",
+      "kind": "output",
+      "expression": "Zone1Full",
+      "meaning": "Zone 1 blocked"
+    },
+    {
+      "id": "JamAlarm",
+      "kind": "output",
+      "expression": "JamAlarm",
+      "meaning": "Jam latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Zone 1 moves into a free zone 2",
+      "formula": "G((Zone1Sensor ∧ ¬Zone2Sensor ∧ RunSwitch) → Zone1Motor)",
+      "rationale": "A part advances only when the downstream zone is free."
+    },
+    {
+      "id": "P2",
+      "name": "Zone 1 full condition",
+      "formula": "G((Zone1Sensor ∧ Zone2Sensor) → Zone1Full)",
+      "rationale": "Two consecutive parts block zone 1."
+    },
+    {
+      "id": "P3",
+      "name": "Jam stops all motors",
+      "formula": "G(JamAlarm → ¬(Zone1Motor ∨ Zone2Motor ∨ Zone3Motor))",
+      "rationale": "A jam must remove all drive commands."
+    }
+  ]
+}

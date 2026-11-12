@@ -1,0 +1,76 @@
+{
+  "task_id": "C07",
+  "title": "Bottle Height Sorting",
+  "pou": "FB_C07",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "RunSwitch",
+      "kind": "input",
+      "expression": "RunSwitch",
+      "meaning": "Conveyor enabled"
+    },
+    {
+      "id": "PartPresent",
+      "kind": "input",
+      "expression": "PartPresent",
+      "meaning": "Bottle present"
+    },
+    {
+      "id": "HeightInRange",
+      "kind": "derived",
+      "expression": "HeightSensor >= 40.0 AND HeightSensor <= 60.0",
+      "meaning": "Height inside the accept window"
+    },
+    {
+      "id": "HeightOutOfRange",
+      "kind": "derived",
+      "expression": "(HeightSensor < 40.0 OR HeightSensor > 60.0) AND HeightSensor >= 0.0 AND HeightSensor <= 100.0",
+      "meaning": "Height outside the accept window but within sensor range"
+    },
+    {
+      "id": "AcceptGate",
+      "kind": "output",
+      "expression": "AcceptGate",
+      "meaning": "Accept gate active"
+    },
+    {
+      "id": "RejectGate",
+      "kind": "output",
+      "expression": "RejectGate",
+      "meaning": "Reject gate active"
+    },
+    {
+      "id": "Fault",
+      "kind": "output",
+      "expression": "Fault",
+      "meaning": "Fault latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "In-range bottle is accepted",
+      "formula": "G((PartPresent ∧ HeightInRange ∧ RunSwitch ∧ ¬Fault) → AcceptGate)",
+      "rationale": "A valid height opens the accept gate on the next scan."
+    },
+    {
+      "id": "P2",
+      "name": "Out-of-range bottle is rejected",
+      "formula": "G((PartPresent ∧ HeightOutOfRange ∧ RunSwitch ∧ ¬Fault) → RejectGate)",
+      "rationale": "A valid but wrong height opens the reject gate."
+    },
+    {
+      "id": "P3",
+      "name": "Gates are mutually exclusive",
+      "formula": "G(¬(AcceptGate ∧ RejectGate))",
+      "rationale": "A bottle cannot be routed to both outputs."
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "task_id": "C04",
+  "title": "Star-Delta Motor Starter",
+  "pou": "FB_C04",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "StartButton",
+      "kind": "input",
+      "expression": "StartButton",
+      "meaning": "Start command"
+    },
+    {
+      "id": "StopButton",
+      "kind": "input",
+      "expression": "StopButton",
+      "meaning": "Stop command"
+    },
+    {
+      "id": "Overload",
+      "kind": "input",
+      "expression": "Overload",
+      "meaning": "Overload trip"
+    },
+    {
+      "id": "MainContactor",
+      "kind": "output",
+      "expression": "MainContactor",
+      "meaning": "Main contactor closed"
+    },
+    {
+      "id": "StarContactor",
+      "kind": "output",
+      "expression": "StarContactor",
+      "meaning": "Star contactor closed"
+    },
+    {
+      "id": "DeltaContactor",
+      "kind": "output",
+      "expression": "DeltaContactor",
+      "meaning": "Delta contactor closed"
+    },
+    {
+      "id": "Fault",
+      "kind": "output",
+      "expression": "Fault",
+      "meaning": "Fault latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Overload trips all contactors",
+      "formula": "G(Overload → (¬MainContactor ∧ ¬StarContactor ∧ ¬DeltaContactor))",
+      "rationale": "An overload must remove power from every contactor."
+    },
+    {
+      "id": "P2",
+      "name": "Star-delta interlock",
+      "formula": "G(¬(StarContactor ∧ DeltaContactor))",
+      "rationale": "The two contactors must never be closed together."
+    },
+    {
+      "id": "P3",
+      "name": "Timed transition",
+      "formula": "G((MainContactor ∧ StarContactor) → F DeltaContactor)",
+      "rationale": "A running star connection eventually transitions to delta."
+    }
+  ]
+}

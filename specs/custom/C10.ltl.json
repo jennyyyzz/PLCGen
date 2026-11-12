@@ -1,0 +1,94 @@
+{
+  "task_id": "C10",
+  "title": "Boiler Purge and Ignition Sequence",
+  "pou": "FB_C10",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "StartButton",
+      "kind": "input",
+      "expression": "StartButton",
+      "meaning": "Start command"
+    },
+    {
+      "id": "StopButton",
+      "kind": "input",
+      "expression": "StopButton",
+      "meaning": "Stop command"
+    },
+    {
+      "id": "EmergencyStop",
+      "kind": "input",
+      "expression": "EmergencyStop",
+      "meaning": "Emergency stop"
+    },
+    {
+      "id": "FlameSensor",
+      "kind": "input",
+      "expression": "FlameSensor",
+      "meaning": "Flame proven"
+    },
+    {
+      "id": "PurgeFan",
+      "kind": "output",
+      "expression": "PurgeFan",
+      "meaning": "Purge fan"
+    },
+    {
+      "id": "Igniter",
+      "kind": "output",
+      "expression": "Igniter",
+      "meaning": "Igniter"
+    },
+    {
+      "id": "FuelValve",
+      "kind": "output",
+      "expression": "FuelValve",
+      "meaning": "Fuel valve"
+    },
+    {
+      "id": "FlameOn",
+      "kind": "output",
+      "expression": "FlameOn",
+      "meaning": "Flame established"
+    },
+    {
+      "id": "Lockout",
+      "kind": "output",
+      "expression": "Lockout",
+      "meaning": "Lockout latched"
+    },
+    {
+      "id": "Fault",
+      "kind": "output",
+      "expression": "Fault",
+      "meaning": "Fault latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Lockout removes all combustion outputs",
+      "formula": "G(Lockout → ¬(PurgeFan ∨ Igniter ∨ FuelValve))",
+      "rationale": "A lockout must de-energize the fan, igniter and fuel valve."
+    },
+    {
+      "id": "P2",
+      "name": "Fuel requires proven flame",
+      "formula": "G(FuelValve → FlameOn)",
+      "rationale": "Fuel must never be admitted without a proven flame."
+    },
+    {
+      "id": "P3",
+      "name": "Failed ignition locks out",
+      "formula": "G((Igniter ∧ ¬FlameSensor) → F Lockout)",
+      "rationale": "Ignition that does not prove flame eventually latches lockout."
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "task_id": "C06",
+  "title": "Elevator Door Control",
+  "pou": "FB_C06",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "OpenButton",
+      "kind": "input",
+      "expression": "OpenButton",
+      "meaning": "Open command"
+    },
+    {
+      "id": "CloseButton",
+      "kind": "input",
+      "expression": "CloseButton",
+      "meaning": "Close command"
+    },
+    {
+      "id": "ObstacleSensor",
+      "kind": "input",
+      "expression": "ObstacleSensor",
+      "meaning": "Obstacle detected"
+    },
+    {
+      "id": "DoorOpenLimit",
+      "kind": "input",
+      "expression": "DoorOpenLimit",
+      "meaning": "Open limit reached"
+    },
+    {
+      "id": "DoorClosedLimit",
+      "kind": "input",
+      "expression": "DoorClosedLimit",
+      "meaning": "Closed limit reached"
+    },
+    {
+      "id": "DoorMotorOpen",
+      "kind": "output",
+      "expression": "DoorMotorOpen",
+      "meaning": "Opening motor"
+    },
+    {
+      "id": "DoorMotorClose",
+      "kind": "output",
+      "expression": "DoorMotorClose",
+      "meaning": "Closing motor"
+    },
+    {
+      "id": "DoorOpen",
+      "kind": "output",
+      "expression": "DoorOpen",
+      "meaning": "Door open"
+    },
+    {
+      "id": "DoorClosed",
+      "kind": "output",
+      "expression": "DoorClosed",
+      "meaning": "Door closed"
+    },
+    {
+      "id": "Fault",
+      "kind": "output",
+      "expression": "Fault",
+      "meaning": "Fault latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Obstacle prevents closing",
+      "formula": "G(ObstacleSensor → ¬DoorMotorClose)",
+      "rationale": "The obstacle detector has priority over the close command."
+    },
+    {
+      "id": "P2",
+      "name": "Motor interlock",
+      "formula": "G(¬(DoorMotorOpen ∧ DoorMotorClose))",
+      "rationale": "Open and close motors must never be energized together."
+    },
+    {
+      "id": "P3",
+      "name": "Automatic close",
+      "formula": "G((DoorOpenLimit ∧ ¬ObstacleSensor ∧ ¬OpenButton) → F DoorMotorClose)",
+      "rationale": "An open door eventually starts closing when the path is clear."
+    }
+  ]
+}

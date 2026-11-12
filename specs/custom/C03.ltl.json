@@ -1,0 +1,70 @@
+{
+  "task_id": "C03",
+  "title": "Automatic Barrier Gate",
+  "pou": "FB_C03",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "VehiclePresent",
+      "kind": "input",
+      "expression": "VehiclePresent",
+      "meaning": "Vehicle detected"
+    },
+    {
+      "id": "OpenButton",
+      "kind": "input",
+      "expression": "OpenButton",
+      "meaning": "Open button pressed"
+    },
+    {
+      "id": "SafetyBeam",
+      "kind": "input",
+      "expression": "SafetyBeam",
+      "meaning": "Obstacle detected"
+    },
+    {
+      "id": "GateOpen",
+      "kind": "output",
+      "expression": "GateOpen",
+      "meaning": "Gate open"
+    },
+    {
+      "id": "GateClosed",
+      "kind": "output",
+      "expression": "GateClosed",
+      "meaning": "Gate closed"
+    },
+    {
+      "id": "WarningLight",
+      "kind": "output",
+      "expression": "WarningLight",
+      "meaning": "Warning lamp on"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Vehicle opens the gate",
+      "formula": "G(VehiclePresent → GateOpen)",
+      "rationale": "A detected vehicle must not be blocked by a closed gate."
+    },
+    {
+      "id": "P2",
+      "name": "Beam opens and warns",
+      "formula": "G(SafetyBeam → (GateOpen ∧ WarningLight))",
+      "rationale": "An obstacle forces the gate open and lights the warning lamp."
+    },
+    {
+      "id": "P3",
+      "name": "Delayed close",
+      "formula": "G((GateOpen ∧ ¬VehiclePresent ∧ ¬SafetyBeam) → F GateClosed)",
+      "rationale": "After the hold conditions disappear, the gate eventually closes."
+    }
+  ]
+}

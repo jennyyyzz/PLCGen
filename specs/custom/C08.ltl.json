@@ -1,0 +1,76 @@
+{
+  "task_id": "C08",
+  "title": "Greenhouse Irrigation Zones",
+  "pou": "FB_C08",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "StartButton",
+      "kind": "input",
+      "expression": "StartButton",
+      "meaning": "Start command"
+    },
+    {
+      "id": "StopButton",
+      "kind": "input",
+      "expression": "StopButton",
+      "meaning": "Stop command"
+    },
+    {
+      "id": "Zone1Valve",
+      "kind": "output",
+      "expression": "Zone1Valve",
+      "meaning": "Zone 1 irrigating"
+    },
+    {
+      "id": "Zone2Valve",
+      "kind": "output",
+      "expression": "Zone2Valve",
+      "meaning": "Zone 2 irrigating"
+    },
+    {
+      "id": "Zone3Valve",
+      "kind": "output",
+      "expression": "Zone3Valve",
+      "meaning": "Zone 3 irrigating"
+    },
+    {
+      "id": "Pump",
+      "kind": "output",
+      "expression": "Pump",
+      "meaning": "Pump running"
+    },
+    {
+      "id": "CycleComplete",
+      "kind": "output",
+      "expression": "CycleComplete",
+      "meaning": "Cycle finished"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Valve implies pump",
+      "formula": "G((Zone1Valve ∨ Zone2Valve ∨ Zone3Valve) → Pump)",
+      "rationale": "The pump must run for any open zone valve."
+    },
+    {
+      "id": "P2",
+      "name": "Stop removes all outputs",
+      "formula": "G(StopButton → ¬(Zone1Valve ∨ Zone2Valve ∨ Zone3Valve ∨ Pump))",
+      "rationale": "Stop must abort the cycle and de-energize the hydraulics."
+    },
+    {
+      "id": "P3",
+      "name": "Started cycle terminates",
+      "formula": "G((StartButton ∧ ¬CycleComplete) → F CycleComplete)",
+      "rationale": "A cycle that is started eventually completes."
+    }
+  ]
+}

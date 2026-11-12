@@ -1,0 +1,94 @@
+{
+  "task_id": "C05",
+  "title": "Car Wash Sequence",
+  "pou": "FB_C05",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "StartButton",
+      "kind": "input",
+      "expression": "StartButton",
+      "meaning": "Start command"
+    },
+    {
+      "id": "EmergencyStop",
+      "kind": "input",
+      "expression": "EmergencyStop",
+      "meaning": "Emergency stop"
+    },
+    {
+      "id": "VehiclePresent",
+      "kind": "input",
+      "expression": "VehiclePresent",
+      "meaning": "Vehicle present"
+    },
+    {
+      "id": "ConveyorMotor",
+      "kind": "output",
+      "expression": "ConveyorMotor",
+      "meaning": "Conveyor running"
+    },
+    {
+      "id": "FoamValve",
+      "kind": "output",
+      "expression": "FoamValve",
+      "meaning": "Foam active"
+    },
+    {
+      "id": "BrushMotor",
+      "kind": "output",
+      "expression": "BrushMotor",
+      "meaning": "Brush active"
+    },
+    {
+      "id": "RinseValve",
+      "kind": "output",
+      "expression": "RinseValve",
+      "meaning": "Rinse active"
+    },
+    {
+      "id": "DryFan",
+      "kind": "output",
+      "expression": "DryFan",
+      "meaning": "Dry fan active"
+    },
+    {
+      "id": "CycleComplete",
+      "kind": "output",
+      "expression": "CycleComplete",
+      "meaning": "Cycle finished"
+    },
+    {
+      "id": "Fault",
+      "kind": "output",
+      "expression": "Fault",
+      "meaning": "Fault latched"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Emergency stop removes all actuators",
+      "formula": "G(EmergencyStop → ¬(ConveyorMotor ∨ FoamValve ∨ BrushMotor ∨ RinseValve ∨ DryFan))",
+      "rationale": "Safety stop must de-energize every actuator on the next scan."
+    },
+    {
+      "id": "P2",
+      "name": "Foam requires conveyor",
+      "formula": "G(FoamValve → ConveyorMotor)",
+      "rationale": "A wash chemical must not be applied without part motion."
+    },
+    {
+      "id": "P3",
+      "name": "Cycle eventually completes",
+      "formula": "G((StartButton ∧ VehiclePresent ∧ ¬Fault) → F CycleComplete)",
+      "rationale": "A started wash cycle reaches its terminal state."
+    }
+  ]
+}

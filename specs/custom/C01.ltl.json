@@ -1,0 +1,70 @@
+{
+  "task_id": "C01",
+  "title": "Product Reject and Filtering Station",
+  "pou": "FB_C01",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "RunSwitch",
+      "kind": "input",
+      "expression": "RunSwitch",
+      "meaning": "Conveyor enabled"
+    },
+    {
+      "id": "PartPresent",
+      "kind": "input",
+      "expression": "PartPresent",
+      "meaning": "Part at inspection point"
+    },
+    {
+      "id": "DefectSensor",
+      "kind": "input",
+      "expression": "DefectSensor",
+      "meaning": "Defective part"
+    },
+    {
+      "id": "RejectPusher",
+      "kind": "output",
+      "expression": "RejectPusher",
+      "meaning": "Pusher extended"
+    },
+    {
+      "id": "BatchFull",
+      "kind": "output",
+      "expression": "BatchFull",
+      "meaning": "Batch complete"
+    },
+    {
+      "id": "ConveyorMotor",
+      "kind": "output",
+      "expression": "ConveyorMotor",
+      "meaning": "Conveyor running"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Defective part is rejected",
+      "formula": "G((PartPresent ∧ DefectSensor ∧ RunSwitch ∧ ¬BatchFull) → RejectPusher)",
+      "rationale": "A defective part on a running conveyor activates the pusher on the next scan."
+    },
+    {
+      "id": "P2",
+      "name": "Pusher retracts",
+      "formula": "G(RejectPusher → F ¬RejectPusher)",
+      "rationale": "The reject pusher is a temporary pulse, not a permanent output."
+    },
+    {
+      "id": "P3",
+      "name": "Batch full stops the conveyor",
+      "formula": "G(BatchFull → ¬ConveyorMotor)",
+      "rationale": "No further parts may be transported after the batch is full."
+    }
+  ]
+}

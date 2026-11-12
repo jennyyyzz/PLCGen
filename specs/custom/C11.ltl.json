@@ -1,0 +1,82 @@
+{
+  "task_id": "C11",
+  "title": "Palletizer Layer Counting",
+  "pou": "FB_C11",
+  "abstraction": "Discrete-time LTL over scan-cycle states. Numeric conditions are derived atoms; timer conditions use internal atoms mapped to the TON/TOF .Q flag of the reference implementation.",
+  "assumptions": [
+    "The PLC scan is periodic (20 ms in the test cases).",
+    "Inputs change only at scan boundaries.",
+    "A timer atom becomes true after its configured delay has elapsed.",
+    "The reference implementation is used only to validate the specification; it is not shown to the coding agent."
+  ],
+  "atoms": [
+    {
+      "id": "RunSwitch",
+      "kind": "input",
+      "expression": "RunSwitch",
+      "meaning": "Conveyor enabled"
+    },
+    {
+      "id": "BoxPresent",
+      "kind": "input",
+      "expression": "BoxPresent",
+      "meaning": "Box present"
+    },
+    {
+      "id": "ConveyorMotor",
+      "kind": "output",
+      "expression": "ConveyorMotor",
+      "meaning": "Conveyor running"
+    },
+    {
+      "id": "LayerPush",
+      "kind": "output",
+      "expression": "LayerPush",
+      "meaning": "Layer pusher active"
+    },
+    {
+      "id": "BoxCount",
+      "kind": "output",
+      "expression": "BoxCount",
+      "meaning": "Boxes in current layer"
+    },
+    {
+      "id": "LayerCount",
+      "kind": "output",
+      "expression": "LayerCount",
+      "meaning": "Completed layers"
+    },
+    {
+      "id": "PalletFull",
+      "kind": "output",
+      "expression": "PalletFull",
+      "meaning": "Pallet complete"
+    },
+    {
+      "id": "LayerComplete",
+      "kind": "internal",
+      "expression": "layerTrigger",
+      "meaning": "Third box of a layer detected"
+    }
+  ],
+  "properties": [
+    {
+      "id": "P1",
+      "name": "Layer completion pushes",
+      "formula": "G(LayerComplete → LayerPush)",
+      "rationale": "The third box triggers the layer pusher."
+    },
+    {
+      "id": "P2",
+      "name": "Full pallet stops conveyor",
+      "formula": "G(PalletFull → ¬ConveyorMotor)",
+      "rationale": "A full pallet must stop the infeed."
+    },
+    {
+      "id": "P3",
+      "name": "Push pulse ends",
+      "formula": "G((LayerPush ∧ ¬PalletFull) → F ¬LayerPush)",
+      "rationale": "The layer pusher retracts after its 1 s pulse."
+    }
+  ]
+}
