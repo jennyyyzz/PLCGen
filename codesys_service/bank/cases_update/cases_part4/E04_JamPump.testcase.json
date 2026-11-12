@@ -1,0 +1,364 @@
+{
+  "task_id": "E04_JamPump",
+  "title": "Jam Pump Debouncing and Runtime Maintenance",
+  "pou": "E04_JamPump",
+  "scan_ms": 20,
+  "interface": [
+    {
+      "name": "VISCOSITY_OK",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "raw viscosity-in-range signal"
+    },
+    {
+      "name": "PASTE_E_STOP_NC",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "NC e-stop; TRUE permits operation"
+    },
+    {
+      "name": "DebounceTime",
+      "dir": "input",
+      "type": "TIME",
+      "desc": "required continuous valid duration (ms)"
+    },
+    {
+      "name": "CycleTime",
+      "dir": "input",
+      "type": "TIME",
+      "desc": "elapsed interval of this invocation (ms)"
+    },
+    {
+      "name": "VFD_RUN",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "pump VFD run command"
+    },
+    {
+      "name": "PUMP_MAINT_DUE",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "maintenance due at 500 h"
+    },
+    {
+      "name": "PUMP_RUNTIME_ACC",
+      "dir": "output",
+      "type": "LTIME",
+      "desc": "accumulated enabled runtime (ns)"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "Debounce before the pump may run",
+      "coverage": "power-up state, viscosity held shorter than DebounceTime, run after the full debounce",
+      "initial_state": "power-up: VFD_RUN FALSE, runtime 0, maintenance FALSE; DebounceTime=1000ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VISCOSITY_OK": 0,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0,
+            "PUMP_MAINT_DUE": 0,
+            "PUMP_RUNTIME_ACC": 0
+          },
+          "check": "power-up: everything off"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "viscosity valid, debounce running",
+          "hold_ms": 800
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "full DebounceTime elapsed -> pump runs",
+          "hold_ms": 400
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "keeps running",
+          "hold_ms": 200
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Viscosity loss stops the pump and clears timing",
+      "coverage": "FALSE stops the pump immediately, debounce restarts from zero",
+      "initial_state": "power-up; DebounceTime=1000ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "running after the debounce",
+          "hold_ms": 1200
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "VISCOSITY_OK": 0,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "viscosity lost -> stop immediately"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "new demand: not yet debounced",
+          "hold_ms": 500
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "full debounce again -> running",
+          "hold_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Emergency stop has priority and clears debounce timing",
+      "coverage": "e-stop stops the pump, blocks starting, requires a full debounce after release",
+      "initial_state": "power-up; DebounceTime=1000ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "running",
+          "hold_ms": 1200
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 0,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "E-STOP -> stop immediately"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 0,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "cannot start while the e-stop is active",
+          "hold_ms": 1500
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 0
+          },
+          "check": "released: debounce was cleared"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 1000,
+            "CycleTime": 100
+          },
+          "expect": {
+            "VFD_RUN": 1
+          },
+          "check": "full debounce -> running again",
+          "hold_ms": 1100
+        }
+      ]
+    },
+    {
+      "id": "TC04",
+      "name": "Runtime accumulation and the maintenance indication",
+      "coverage": "runtime accumulates only while running, preserved while stopped, flag at 500 h, flag does not affect the pump",
+      "initial_state": "power-up; DebounceTime=0ms, CycleTime=100h per invocation",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "VFD_RUN": 1,
+            "PUMP_RUNTIME_ACC": 360000000,
+            "PUMP_MAINT_DUE": 0
+          },
+          "check": "100h"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "PUMP_RUNTIME_ACC": 720000000,
+            "PUMP_MAINT_DUE": 0
+          },
+          "check": "200h"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "VISCOSITY_OK": 0,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "VFD_RUN": 0,
+            "PUMP_RUNTIME_ACC": 720000000
+          },
+          "check": "stopped -> runtime preserved"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "VFD_RUN": 1,
+            "PUMP_RUNTIME_ACC": 1080000000
+          },
+          "check": "300h"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "PUMP_RUNTIME_ACC": 1440000000,
+            "PUMP_MAINT_DUE": 0
+          },
+          "check": "400h: still below"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "PUMP_RUNTIME_ACC": 1800000000,
+            "PUMP_MAINT_DUE": 1
+          },
+          "check": "500h -> maintenance due"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "VISCOSITY_OK": 1,
+            "PASTE_E_STOP_NC": 1,
+            "DebounceTime": 0,
+            "CycleTime": 360000000
+          },
+          "expect": {
+            "VFD_RUN": 1,
+            "PUMP_MAINT_DUE": 1
+          },
+          "check": "flag does not affect the pump"
+        }
+      ]
+    }
+  ],
+  "notes": "Debounce is measured by a TON (wall-clock), matching the Part-2 reference; hold_ms drives the virtual scan clock. Runtime accumulators are compared in milliseconds (TIME_TO_LTIME keeps ms in this toolchain)."
+}

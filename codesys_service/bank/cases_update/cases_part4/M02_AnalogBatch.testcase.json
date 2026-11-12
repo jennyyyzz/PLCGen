@@ -1,0 +1,388 @@
+{
+  "task_id": "M02_AnalogBatch",
+  "title": "Analog Batch Processing",
+  "pou": "M02_AnalogBatch",
+  "scan_ms": 20,
+  "interface": [
+    {
+      "name": "count",
+      "dir": "input",
+      "type": "DINT",
+      "desc": "number of channels to process"
+    },
+    {
+      "name": "analogValues[1]",
+      "dir": "input",
+      "type": "INT",
+      "desc": "raw value of channel 1"
+    },
+    {
+      "name": "analogValues[2]",
+      "dir": "input",
+      "type": "INT",
+      "desc": "raw value of channel 2"
+    },
+    {
+      "name": "channels[1].enable",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "enable channel 1"
+    },
+    {
+      "name": "channels[1].hiLIM",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "upper limit"
+    },
+    {
+      "name": "channels[1].loLIM",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "lower limit"
+    },
+    {
+      "name": "channels[1].bipolar",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "bipolar operation"
+    },
+    {
+      "name": "channels[1].measuringMode",
+      "dir": "input",
+      "type": "INT",
+      "desc": "0 linear, 1 standard temp, 2 climatic temp"
+    },
+    {
+      "name": "channels[2].enable",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "enable channel 2"
+    },
+    {
+      "name": "channels[2].hiLIM",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "upper limit"
+    },
+    {
+      "name": "channels[2].loLIM",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "lower limit"
+    },
+    {
+      "name": "channels[2].bipolar",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "bipolar operation"
+    },
+    {
+      "name": "channels[2].measuringMode",
+      "dir": "input",
+      "type": "INT",
+      "desc": "0 linear, 1 standard temp, 2 climatic temp"
+    },
+    {
+      "name": "channels[1].retVal",
+      "dir": "output",
+      "type": "WORD",
+      "desc": "status code"
+    },
+    {
+      "name": "channels[1].outputValue",
+      "dir": "output",
+      "type": "REAL",
+      "desc": "converted value"
+    },
+    {
+      "name": "channels[2].retVal",
+      "dir": "output",
+      "type": "WORD",
+      "desc": "status code"
+    },
+    {
+      "name": "channels[2].outputValue",
+      "dir": "output",
+      "type": "REAL",
+      "desc": "converted value"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "Unipolar and bipolar linear scaling (mode 0)",
+      "coverage": "raw 0, mid and full scale mapped to the engineering range, bipolar negative range",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 0,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 27648,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].outputValue": 0.0,
+            "channels[1].retVal": 0,
+            "channels[2].outputValue": 100.0,
+            "channels[2].retVal": 0
+          },
+          "check": "unipolar: 0 -> loLIM, 27648 -> hiLIM"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 13824,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 13824,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 200.0,
+            "channels[2].loLIM": 100.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].outputValue": 50.0,
+            "channels[1].retVal": 0,
+            "channels[2].outputValue": 150.0,
+            "channels[2].retVal": 0
+          },
+          "check": "unipolar mid scale"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": -27648,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": -100.0,
+            "channels[1].bipolar": 1,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 27648,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": -100.0,
+            "channels[2].bipolar": 1,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].outputValue": -100.0,
+            "channels[1].retVal": 0,
+            "channels[2].outputValue": 100.0,
+            "channels[2].retVal": 0
+          },
+          "check": "bipolar: -27648 -> loLIM, 27648 -> hiLIM"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "count": 1,
+            "analogValues[1]": 0,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": -100.0,
+            "channels[1].bipolar": 1,
+            "channels[1].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].outputValue": 0.0,
+            "channels[1].retVal": 0
+          },
+          "check": "bipolar zero -> midpoint of the range"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Temperature conversions (modes 1 and 2)",
+      "coverage": "standard temperature = raw/10, climatic temperature = raw/100, negative values",
+      "initial_state": "power-up; limits set to a valid range (the limit check applies to every mode)",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 250,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 1,
+            "analogValues[2]": 2500,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 2
+          },
+          "expect": {
+            "channels[1].outputValue": 25.0,
+            "channels[1].retVal": 0,
+            "channels[2].outputValue": 25.0,
+            "channels[2].retVal": 0
+          },
+          "check": "mode 1: 250 -> 25.0; mode 2: 2500 -> 25.0"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": -125,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 1,
+            "analogValues[2]": -1250,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 2
+          },
+          "expect": {
+            "channels[1].outputValue": -12.5,
+            "channels[1].retVal": 0,
+            "channels[2].outputValue": -12.5,
+            "channels[2].retVal": 0
+          },
+          "check": "negative temperatures"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "count": 1,
+            "analogValues[1]": 0,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 1
+          },
+          "expect": {
+            "channels[1].outputValue": 0.0,
+            "channels[1].retVal": 0
+          },
+          "check": "zero raw value"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Error handling and enable flag",
+      "coverage": "invalid mode -> 16#8001, hiLIM <= loLIM -> 16#8002, disabled channels are skipped, count limits processing",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 13824,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 5,
+            "analogValues[2]": 13824,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].retVal": 32769,
+            "channels[2].outputValue": 50.0,
+            "channels[2].retVal": 0
+          },
+          "check": "channel 1 invalid mode -> 16#8001, channel 2 still converted"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 13824,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 0.0,
+            "channels[1].loLIM": 100.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 13824,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 50.0,
+            "channels[2].loLIM": 50.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].retVal": 32770,
+            "channels[2].retVal": 32770
+          },
+          "check": "hiLIM < loLIM and hiLIM = loLIM -> 16#8002"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "count": 2,
+            "analogValues[1]": 13824,
+            "channels[1].enable": 0,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 13824,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[2].outputValue": 50.0,
+            "channels[2].retVal": 0
+          },
+          "check": "disabled channel is skipped"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "count": 1,
+            "analogValues[1]": 13824,
+            "channels[1].enable": 1,
+            "channels[1].hiLIM": 100.0,
+            "channels[1].loLIM": 0.0,
+            "channels[1].bipolar": 0,
+            "channels[1].measuringMode": 0,
+            "analogValues[2]": 13824,
+            "channels[2].enable": 1,
+            "channels[2].hiLIM": 100.0,
+            "channels[2].loLIM": 0.0,
+            "channels[2].bipolar": 0,
+            "channels[2].measuringMode": 0
+          },
+          "expect": {
+            "channels[1].outputValue": 50.0,
+            "channels[1].retVal": 0
+          },
+          "check": "count=1: only the first channel is processed"
+        }
+      ]
+    }
+  ]
+}

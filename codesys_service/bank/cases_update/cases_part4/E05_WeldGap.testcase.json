@@ -1,0 +1,299 @@
+{
+  "task_id": "E05_WeldGap",
+  "title": "Weld Gap Alarm and Startup Inhibition",
+  "pou": "E05_WeldGap",
+  "scan_ms": 20,
+  "interface": [
+    {
+      "name": "Gap_Exceeded",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "gap exceeds 1.5 mm"
+    },
+    {
+      "name": "Weld_E_Stop_NC",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "TRUE = e-stop inactive"
+    },
+    {
+      "name": "DebounceTime",
+      "dir": "input",
+      "type": "TIME",
+      "desc": "gap-signal debounce duration (ms)"
+    },
+    {
+      "name": "Operator_Alert",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "audible/visual alarm"
+    },
+    {
+      "name": "Weld_Soft_Start_Active",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "5s power-up inhibition active"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "Power-up inhibition period",
+      "coverage": "soft-start active for 5s, alarm suppressed during inhibition, debounce does not accumulate, monitoring resumes afterwards",
+      "initial_state": "power-up, Weld_E_Stop_NC=1, DebounceTime=200ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Gap_Exceeded": 0,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 200
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 1
+          },
+          "check": "power-up: inhibition active"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 200
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 1
+          },
+          "check": "gap during inhibition: no alarm",
+          "hold_ms": 3000
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 200
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 1
+          },
+          "check": "3s elapsed: still inhibited, debounce not accumulating"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 200
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 0
+          },
+          "check": "5s elapsed: inhibition ends; debounce starts now from zero",
+          "hold_ms": 2100
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 200
+          },
+          "expect": {
+            "Operator_Alert": 1,
+            "Weld_Soft_Start_Active": 0
+          },
+          "check": "gap held for DebounceTime after init -> alarm",
+          "hold_ms": 300
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Debounce during normal monitoring",
+      "coverage": "alarm only after DebounceTime, short gap ignored, signal FALSE clears alarm and timing",
+      "initial_state": "after the 5s inhibition, DebounceTime=500ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Gap_Exceeded": 0,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 0
+          },
+          "check": "initialisation finished",
+          "hold_ms": 5200
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "gap appears, debounce running",
+          "hold_ms": 300
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Gap_Exceeded": 0,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "gap disappears before 500ms -> no alarm, timing cleared"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "new gap: full debounce required again",
+          "hold_ms": 300
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 1
+          },
+          "check": "500ms reached -> alarm",
+          "hold_ms": 300
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 1
+          },
+          "check": "alarm held while gap persists",
+          "hold_ms": 500
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "Gap_Exceeded": 0,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 500
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "gap cleared -> alarm off immediately"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Emergency stop priority",
+      "coverage": "estop clears alarm immediately, blocks alarm during inhibition and monitoring, debounce cleared, full debounce after release",
+      "initial_state": "after initialisation, DebounceTime=400ms",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "Gap_Exceeded": 0,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 0,
+            "Weld_Soft_Start_Active": 0
+          },
+          "check": "ready",
+          "hold_ms": 5200
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 1
+          },
+          "check": "alarm active",
+          "hold_ms": 500
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 0,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "E-STOP -> alarm off immediately"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 0,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "alarm stays off while e-stop active",
+          "hold_ms": 1000
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 0
+          },
+          "check": "released: debounce was cleared, not yet alarming"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "Gap_Exceeded": 1,
+            "Weld_E_Stop_NC": 1,
+            "DebounceTime": 400
+          },
+          "expect": {
+            "Operator_Alert": 1
+          },
+          "check": "after a full DebounceTime -> alarm again",
+          "hold_ms": 500
+        }
+      ]
+    }
+  ]
+}

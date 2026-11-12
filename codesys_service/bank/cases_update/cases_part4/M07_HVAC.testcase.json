@@ -1,0 +1,368 @@
+{
+  "task_id": "M07_HVAC",
+  "title": "Office HVAC Multi-mode Energy-Saving Control",
+  "pou": "M07_HVAC",
+  "scan_ms": 20,
+  "interface": [
+    {
+      "name": "OCCUPANCY_DETECTED",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "occupancy from CO2 sensor"
+    },
+    {
+      "name": "ENERGY_SAVING_MODE",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "TRUE = energy saving (Auto only)"
+    },
+    {
+      "name": "HVAC_MODE_SELECTOR",
+      "dir": "input",
+      "type": "INT",
+      "desc": "0 Auto, 1 Comfort, 2 Economy, 3 Night"
+    },
+    {
+      "name": "SUPPLY_FAN_RUN",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "supply fan enable"
+    },
+    {
+      "name": "TEMP_SETPOINT_ADJUST",
+      "dir": "output",
+      "type": "INT",
+      "desc": "setpoint adjustment in C"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "30-second fan start delay",
+      "coverage": "power-up state, no run before 30s, run after 30s, stop on occupancy loss, full delay again",
+      "initial_state": "power-up: fan OFF, adjustment 0. Auto mode",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 2
+          },
+          "check": "power-up, unoccupied auto standard -> +2"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "occupancy -> delay starts, adjustment immediately 0",
+          "hold_ms": 20000
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0
+          },
+          "check": "20s: still waiting",
+          "hold_ms": 9900
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 1
+          },
+          "check": "30s reached -> fan runs",
+          "hold_ms": 200
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 2
+          },
+          "check": "occupancy lost -> fan stops immediately"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0
+          },
+          "check": "new occupancy: 20s is not enough",
+          "hold_ms": 20000
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 1
+          },
+          "check": "full 30s -> fan runs again",
+          "hold_ms": 10200
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "Night mode blocks the fan",
+      "coverage": "night mode stops the fan and resets timing regardless of occupancy",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 1,
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "auto occupied, fan running",
+          "hold_ms": 30200
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 3
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "night mode -> fan stops immediately, +4"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 3
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "night mode: fan stays off even when occupied",
+          "hold_ms": 31000
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 3
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "night mode unoccupied -> still +4"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 0,
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "back to auto: full 30s required again"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "SUPPLY_FAN_RUN": 1
+          },
+          "check": "30s -> fan runs",
+          "hold_ms": 30200
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "Setpoint adjustment per mode",
+      "coverage": "all four modes, occupied and unoccupied, energy-saving affects Auto only, range within +-4",
+      "initial_state": "power-up",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "auto occupied -> 0"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 2
+          },
+          "check": "auto unoccupied standard -> +2"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 1,
+            "HVAC_MODE_SELECTOR": 0
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 3
+          },
+          "check": "auto unoccupied energy-saving -> +3"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 1
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "comfort occupied -> 0"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 1
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 1
+          },
+          "check": "comfort unoccupied -> +1"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 1,
+            "HVAC_MODE_SELECTOR": 1
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 1
+          },
+          "check": "energy-saving does not affect comfort -> +1"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 2
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 0
+          },
+          "check": "economy occupied -> 0"
+        },
+        {
+          "cycle": 7,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 2
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "economy unoccupied -> +4"
+        },
+        {
+          "cycle": 8,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 1,
+            "HVAC_MODE_SELECTOR": 2
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "energy-saving does not affect economy -> +4"
+        },
+        {
+          "cycle": 9,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 1,
+            "ENERGY_SAVING_MODE": 0,
+            "HVAC_MODE_SELECTOR": 3
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "night occupied -> +4"
+        },
+        {
+          "cycle": 10,
+          "inputs": {
+            "OCCUPANCY_DETECTED": 0,
+            "ENERGY_SAVING_MODE": 1,
+            "HVAC_MODE_SELECTOR": 3
+          },
+          "expect": {
+            "TEMP_SETPOINT_ADJUST": 4
+          },
+          "check": "night unoccupied energy-saving -> +4"
+        }
+      ]
+    }
+  ]
+}
