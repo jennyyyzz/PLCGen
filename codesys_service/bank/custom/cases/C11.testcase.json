@@ -1,0 +1,229 @@
+{
+  "task_id": "C11",
+  "title": "Palletizer Layer Counting",
+  "pou": "FB_C11",
+  "scan_ms": 20,
+  "primary_axis": "sorting_filtering",
+  "interface": [
+    {
+      "name": "RunSwitch",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Enables the conveyor"
+    },
+    {
+      "name": "BoxPresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Box at the palletizer infeed"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears counts and full-pallet state"
+    },
+    {
+      "name": "ConveyorMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Conveyor drive"
+    },
+    {
+      "name": "LayerPush",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Layer pusher"
+    },
+    {
+      "name": "BoxCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Boxes in the current layer"
+    },
+    {
+      "name": "LayerCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Completed layers"
+    },
+    {
+      "name": "PalletFull",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Pallet complete"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "two layers fill a pallet",
+      "coverage": "three boxes per layer, layer push pulse, full pallet, reset",
+      "initial_state": "counts zero",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "BoxPresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "BoxCount": 0,
+            "LayerCount": 0,
+            "ConveyorMotor": 1,
+            "PalletFull": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 1,
+            "ConveyorMotor": 1
+          },
+          "check": "box 1"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "BoxCount": 1
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 2
+          },
+          "check": "box 2"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "BoxCount": 2
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 0,
+            "LayerCount": 1,
+            "LayerPush": 1,
+            "ConveyorMotor": 0
+          },
+          "check": "layer 1 push"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "LayerPush": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "push retracts",
+          "hold_ms": 1100
+        },
+        {
+          "cycle": 7,
+          "inputs": {
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 1
+          },
+          "check": "box 4"
+        },
+        {
+          "cycle": 8,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "BoxCount": 1
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 9,
+          "inputs": {
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 2
+          },
+          "check": "box 5"
+        },
+        {
+          "cycle": 10,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "BoxCount": 2
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 11,
+          "inputs": {
+            "BoxPresent": 1
+          },
+          "expect": {
+            "BoxCount": 0,
+            "LayerCount": 2,
+            "LayerPush": 1,
+            "PalletFull": 1,
+            "ConveyorMotor": 0
+          },
+          "check": "layer 2 fills pallet"
+        },
+        {
+          "cycle": 12,
+          "inputs": {
+            "BoxPresent": 0
+          },
+          "expect": {
+            "LayerPush": 0,
+            "ConveyorMotor": 0,
+            "PalletFull": 1
+          },
+          "check": "push retracts, pallet remains full",
+          "hold_ms": 1100
+        },
+        {
+          "cycle": 13,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "BoxCount": 0,
+            "LayerCount": 0,
+            "PalletFull": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset pallet"
+        }
+      ]
+    }
+  ]
+}

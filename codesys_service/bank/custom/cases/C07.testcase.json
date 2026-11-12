@@ -1,0 +1,200 @@
+{
+  "task_id": "C07",
+  "title": "Bottle Height Sorting",
+  "pou": "FB_C07",
+  "scan_ms": 20,
+  "primary_axis": "sorting_filtering",
+  "interface": [
+    {
+      "name": "RunSwitch",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Enables the conveyor"
+    },
+    {
+      "name": "PartPresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Bottle at the height sensor"
+    },
+    {
+      "name": "HeightSensor",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Measured bottle height in mm"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears counters and fault"
+    },
+    {
+      "name": "ConveyorMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Conveyor drive"
+    },
+    {
+      "name": "AcceptGate",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Accept diverter gate"
+    },
+    {
+      "name": "RejectGate",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Reject diverter gate"
+    },
+    {
+      "name": "AcceptCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Accepted bottle count"
+    },
+    {
+      "name": "RejectCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Rejected bottle count"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Invalid sensor value latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "accept and reject bottles",
+      "coverage": "in-range accept, high reject, gate pulse 500 ms",
+      "initial_state": "counters zero, conveyor enabled",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "PartPresent": 0,
+            "HeightSensor": 50.0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "AcceptCount": 0,
+            "RejectCount": 0,
+            "Fault": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "PartPresent": 1,
+            "HeightSensor": 50.0
+          },
+          "expect": {
+            "AcceptGate": 1,
+            "RejectGate": 0,
+            "AcceptCount": 1,
+            "ConveyorMotor": 1
+          },
+          "check": "accept 50 mm"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptGate": 0,
+            "AcceptCount": 1
+          },
+          "check": "accept gate retracts",
+          "hold_ms": 600
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "PartPresent": 1,
+            "HeightSensor": 70.0
+          },
+          "expect": {
+            "AcceptGate": 0,
+            "RejectGate": 1,
+            "RejectCount": 1
+          },
+          "check": "reject 70 mm"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "RejectGate": 0,
+            "RejectCount": 1
+          },
+          "check": "reject gate retracts",
+          "hold_ms": 600
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "invalid sensor value",
+      "coverage": "out-of-range sensor latches fault and inhibits gates",
+      "initial_state": "counters zero",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "PartPresent": 0,
+            "HeightSensor": 50.0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "PartPresent": 1,
+            "HeightSensor": 150.0
+          },
+          "expect": {
+            "Fault": 1,
+            "ConveyorMotor": 0,
+            "AcceptGate": 0,
+            "RejectGate": 0,
+            "AcceptCount": 0,
+            "RejectCount": 0
+          },
+          "check": "invalid height"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "ResetButton": 1,
+            "HeightSensor": 50.0
+          },
+          "expect": {
+            "Fault": 0,
+            "AcceptCount": 0,
+            "RejectCount": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset"
+        }
+      ]
+    }
+  ]
+}

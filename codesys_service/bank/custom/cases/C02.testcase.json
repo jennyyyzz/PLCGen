@@ -1,0 +1,204 @@
+{
+  "task_id": "C02",
+  "title": "Two-Hand Safety Press",
+  "pou": "FB_C02",
+  "scan_ms": 20,
+  "primary_axis": "safety_logic",
+  "interface": [
+    {
+      "name": "LeftButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Left operator button"
+    },
+    {
+      "name": "RightButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Right operator button"
+    },
+    {
+      "name": "PartPresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Part is present in the press"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears the fault latch"
+    },
+    {
+      "name": "PressOutput",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Press closes while TRUE"
+    },
+    {
+      "name": "CycleComplete",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "One-scan pulse after a press cycle"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Anti-tiedown fault latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "two-hand press and release",
+      "coverage": "normal two-hand start, cycle-complete pulse, reset state",
+      "initial_state": "no buttons, no part, no fault",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "LeftButton": 0,
+            "RightButton": 0,
+            "PartPresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "PressOutput": 0,
+            "CycleComplete": 0,
+            "Fault": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "LeftButton": 1,
+            "RightButton": 1,
+            "PartPresent": 1
+          },
+          "expect": {
+            "PressOutput": 1,
+            "CycleComplete": 0,
+            "Fault": 0
+          },
+          "check": "both buttons close the press"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "LeftButton": 0,
+            "RightButton": 1,
+            "PartPresent": 1
+          },
+          "expect": {
+            "PressOutput": 0,
+            "CycleComplete": 1
+          },
+          "check": "release one button, cycle complete"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "LeftButton": 0,
+            "RightButton": 0,
+            "PartPresent": 0
+          },
+          "expect": {
+            "PressOutput": 0,
+            "CycleComplete": 0
+          },
+          "check": "cycle pulse ends"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "anti-tiedown fault",
+      "coverage": "single button held 500 ms, fault latch, reset, restart",
+      "initial_state": "no fault",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "LeftButton": 0,
+            "RightButton": 0,
+            "PartPresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "PressOutput": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "LeftButton": 1,
+            "RightButton": 0
+          },
+          "expect": {
+            "Fault": 1,
+            "PressOutput": 0
+          },
+          "check": "one button held alone",
+          "hold_ms": 600
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "LeftButton": 1,
+            "RightButton": 1,
+            "PartPresent": 1
+          },
+          "expect": {
+            "Fault": 1,
+            "PressOutput": 0
+          },
+          "check": "fault blocks the press"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "LeftButton": 0,
+            "RightButton": 0,
+            "PartPresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "PressOutput": 0
+          },
+          "check": "reset while released"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "ResetButton": 0
+          },
+          "expect": {
+            "Fault": 0,
+            "PressOutput": 0
+          },
+          "check": "buttons released"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "LeftButton": 1,
+            "RightButton": 1,
+            "PartPresent": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "PressOutput": 1
+          },
+          "check": "press can restart"
+        }
+      ]
+    }
+  ]
+}

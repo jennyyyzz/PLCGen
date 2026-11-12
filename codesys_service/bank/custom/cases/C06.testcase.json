@@ -1,0 +1,242 @@
+{
+  "task_id": "C06",
+  "title": "Elevator Door Control",
+  "pou": "FB_C06",
+  "scan_ms": 20,
+  "primary_axis": "safety_logic",
+  "interface": [
+    {
+      "name": "OpenButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Open door command"
+    },
+    {
+      "name": "CloseButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Close door command"
+    },
+    {
+      "name": "ObstacleSensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Obstacle in the door path"
+    },
+    {
+      "name": "DoorOpenLimit",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Door fully open limit switch"
+    },
+    {
+      "name": "DoorClosedLimit",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Door fully closed limit switch"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears the invalid-limit fault"
+    },
+    {
+      "name": "DoorMotorOpen",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Open motor"
+    },
+    {
+      "name": "DoorMotorClose",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Close motor"
+    },
+    {
+      "name": "DoorOpen",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Door is open"
+    },
+    {
+      "name": "DoorClosed",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Door is closed"
+    },
+    {
+      "name": "WarningBuzzer",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Obstacle warning"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Invalid limit state latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "open, close by button, limit stop",
+      "coverage": "open command, open limit, close command, closed limit",
+      "initial_state": "door closed",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "OpenButton": 0,
+            "CloseButton": 0,
+            "ObstacleSensor": 0,
+            "DoorOpenLimit": 0,
+            "DoorClosedLimit": 1,
+            "ResetButton": 0
+          },
+          "expect": {
+            "DoorMotorOpen": 0,
+            "DoorMotorClose": 0,
+            "DoorClosed": 1,
+            "DoorOpen": 0
+          },
+          "check": "closed"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "OpenButton": 1,
+            "DoorClosedLimit": 0
+          },
+          "expect": {
+            "DoorMotorOpen": 1,
+            "DoorMotorClose": 0
+          },
+          "check": "opening"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "OpenButton": 0,
+            "DoorOpenLimit": 1
+          },
+          "expect": {
+            "DoorMotorOpen": 0,
+            "DoorOpen": 1,
+            "DoorClosed": 0
+          },
+          "check": "open limit"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "CloseButton": 1,
+            "DoorOpenLimit": 1
+          },
+          "expect": {
+            "DoorMotorClose": 1,
+            "DoorMotorOpen": 0
+          },
+          "check": "closing"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "CloseButton": 0,
+            "DoorOpenLimit": 0,
+            "DoorClosedLimit": 1
+          },
+          "expect": {
+            "DoorMotorClose": 0,
+            "DoorClosed": 1
+          },
+          "check": "closed limit"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "obstacle reversal and buzzer",
+      "coverage": "closing, obstacle, reopen, buzzer",
+      "initial_state": "door open",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "DoorOpenLimit": 1,
+            "DoorClosedLimit": 0,
+            "ObstacleSensor": 0
+          },
+          "expect": {
+            "DoorOpen": 1,
+            "DoorMotorClose": 0
+          },
+          "check": "open"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "CloseButton": 1
+          },
+          "expect": {
+            "DoorMotorClose": 1,
+            "DoorMotorOpen": 0
+          },
+          "check": "closing"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "ObstacleSensor": 1,
+            "DoorOpenLimit": 0
+          },
+          "expect": {
+            "DoorMotorClose": 0,
+            "DoorMotorOpen": 1,
+            "WarningBuzzer": 1
+          },
+          "check": "obstacle reverses"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ObstacleSensor": 0,
+            "CloseButton": 0,
+            "DoorOpenLimit": 1
+          },
+          "expect": {
+            "DoorMotorOpen": 0,
+            "WarningBuzzer": 0,
+            "DoorOpen": 1
+          },
+          "check": "open limit reached"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "automatic close after 5 s",
+      "coverage": "open door, no commands, auto close timer",
+      "initial_state": "door open, path clear",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "DoorOpenLimit": 1,
+            "DoorClosedLimit": 0,
+            "OpenButton": 0,
+            "CloseButton": 0,
+            "ObstacleSensor": 0
+          },
+          "expect": {
+            "DoorMotorClose": 1,
+            "DoorMotorOpen": 0
+          },
+          "check": "auto close starts after 5 s",
+          "hold_ms": 5100
+        }
+      ]
+    }
+  ]
+}

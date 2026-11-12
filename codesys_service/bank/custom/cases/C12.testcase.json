@@ -1,0 +1,260 @@
+{
+  "task_id": "C12",
+  "title": "Safety Light Curtain Muting",
+  "pou": "FB_C12",
+  "scan_ms": 20,
+  "primary_axis": "safety_logic",
+  "interface": [
+    {
+      "name": "RunSwitch",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Enables the conveyor"
+    },
+    {
+      "name": "LightCurtain",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Light curtain blocked"
+    },
+    {
+      "name": "MutingSensor1",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "First muting sensor"
+    },
+    {
+      "name": "MutingSensor2",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Second muting sensor"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears safety stop and alarm"
+    },
+    {
+      "name": "ConveyorMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Conveyor drive"
+    },
+    {
+      "name": "MutingActive",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Muting is active"
+    },
+    {
+      "name": "SafetyStop",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Safety stop latched"
+    },
+    {
+      "name": "Alarm",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Muting alarm latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "curtain safety stop and reset",
+      "coverage": "curtain blocked, safety stop latch, reset when clear",
+      "initial_state": "conveyor enabled, curtain clear",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "LightCurtain": 0,
+            "MutingSensor1": 0,
+            "MutingSensor2": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "SafetyStop": 0,
+            "Alarm": 0,
+            "MutingActive": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "LightCurtain": 1
+          },
+          "expect": {
+            "ConveyorMotor": 0,
+            "SafetyStop": 1,
+            "MutingActive": 0
+          },
+          "check": "curtain blocks"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "LightCurtain": 0
+          },
+          "expect": {
+            "ConveyorMotor": 0,
+            "SafetyStop": 1
+          },
+          "check": "stop remains latched"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "SafetyStop": 0
+          },
+          "check": "reset while clear"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "valid muting sequence",
+      "coverage": "sensor 1 then sensor 2, curtain blocked, conveyor runs",
+      "initial_state": "conveyor enabled, curtain clear",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "MutingSensor1": 1,
+            "MutingSensor2": 0,
+            "LightCurtain": 0
+          },
+          "expect": {
+            "MutingActive": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "sensor 1 armed"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "MutingSensor2": 1,
+            "LightCurtain": 1
+          },
+          "expect": {
+            "MutingActive": 1,
+            "ConveyorMotor": 1,
+            "SafetyStop": 0,
+            "Alarm": 0
+          },
+          "check": "valid muting"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "MutingSensor1": 1,
+            "MutingSensor2": 1,
+            "LightCurtain": 1
+          },
+          "expect": {
+            "MutingActive": 1,
+            "ConveyorMotor": 1
+          },
+          "check": "muting holds"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "MutingSensor1": 0,
+            "MutingSensor2": 0,
+            "LightCurtain": 1
+          },
+          "expect": {
+            "MutingActive": 0,
+            "ConveyorMotor": 0,
+            "SafetyStop": 1
+          },
+          "check": "muting ends, curtain still blocked"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "LightCurtain": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "SafetyStop": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "wrong sequence and muting timeout",
+      "coverage": "sensor 2 first, alarm; sensor 1 alone 2 s, alarm",
+      "initial_state": "conveyor enabled, curtain clear",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "MutingSensor1": 0,
+            "MutingSensor2": 1,
+            "LightCurtain": 0
+          },
+          "expect": {
+            "Alarm": 1,
+            "ConveyorMotor": 0,
+            "MutingActive": 0
+          },
+          "check": "sensor 2 without sensor 1"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 1,
+            "MutingSensor2": 0
+          },
+          "expect": {
+            "Alarm": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset alarm"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "ResetButton": 0,
+            "MutingSensor1": 1
+          },
+          "expect": {
+            "Alarm": 1,
+            "ConveyorMotor": 0
+          },
+          "check": "sensor 1 alone times out",
+          "hold_ms": 2100
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "MutingSensor1": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Alarm": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset timeout"
+        }
+      ]
+    }
+  ]
+}

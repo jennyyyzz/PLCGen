@@ -1,0 +1,261 @@
+{
+  "task_id": "C10",
+  "title": "Boiler Purge and Ignition Sequence",
+  "pou": "FB_C10",
+  "scan_ms": 20,
+  "primary_axis": "safety_logic",
+  "interface": [
+    {
+      "name": "StartButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Burner start command"
+    },
+    {
+      "name": "StopButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Normal stop"
+    },
+    {
+      "name": "EmergencyStop",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Emergency stop"
+    },
+    {
+      "name": "FlameSensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Flame proven"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears lockout and fault"
+    },
+    {
+      "name": "PurgeFan",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Purge fan"
+    },
+    {
+      "name": "Igniter",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Ignition transformer"
+    },
+    {
+      "name": "FuelValve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Fuel valve"
+    },
+    {
+      "name": "FlameOn",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Flame established"
+    },
+    {
+      "name": "Lockout",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Ignition lockout latched"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Emergency fault latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "purge, ignition and normal stop",
+      "coverage": "3 s purge, 2 s ignition, flame proven, stop",
+      "initial_state": "burner off",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 0,
+            "StopButton": 0,
+            "EmergencyStop": 0,
+            "FlameSensor": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "PurgeFan": 0,
+            "Igniter": 0,
+            "FuelValve": 0,
+            "Lockout": 0,
+            "Fault": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "StartButton": 1
+          },
+          "expect": {
+            "PurgeFan": 1,
+            "Igniter": 0,
+            "FuelValve": 0
+          },
+          "check": "purge starts"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "StartButton": 0
+          },
+          "expect": {
+            "PurgeFan": 0,
+            "Igniter": 1,
+            "FuelValve": 0
+          },
+          "check": "ignition after purge",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "FlameSensor": 1
+          },
+          "expect": {
+            "Igniter": 0,
+            "FuelValve": 1,
+            "FlameOn": 1,
+            "Lockout": 0
+          },
+          "check": "flame proven"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "StopButton": 1
+          },
+          "expect": {
+            "PurgeFan": 0,
+            "Igniter": 0,
+            "FuelValve": 0,
+            "FlameOn": 0
+          },
+          "check": "normal stop"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "failed ignition lockout",
+      "coverage": "purge, ignition window expires, lockout, reset",
+      "initial_state": "burner off",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1,
+            "FlameSensor": 0
+          },
+          "expect": {
+            "PurgeFan": 1
+          },
+          "check": "purge"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0
+          },
+          "expect": {
+            "Igniter": 1,
+            "PurgeFan": 0
+          },
+          "check": "ignition",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 2,
+          "inputs": {},
+          "expect": {
+            "Igniter": 0,
+            "FuelValve": 0,
+            "Lockout": 1
+          },
+          "check": "no flame, lockout",
+          "hold_ms": 2100
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "Lockout": 0,
+            "Fault": 0
+          },
+          "check": "reset lockout"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "emergency stop latch",
+      "coverage": "emergency during purge, fault latch, reset",
+      "initial_state": "burner off",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1
+          },
+          "expect": {
+            "PurgeFan": 1,
+            "Fault": 0
+          },
+          "check": "purge"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0,
+            "EmergencyStop": 1
+          },
+          "expect": {
+            "PurgeFan": 0,
+            "Fault": 1
+          },
+          "check": "emergency stop"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "EmergencyStop": 0
+          },
+          "expect": {
+            "PurgeFan": 0,
+            "Fault": 1
+          },
+          "check": "fault latched"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "Lockout": 0
+          },
+          "check": "reset"
+        }
+      ]
+    }
+  ]
+}

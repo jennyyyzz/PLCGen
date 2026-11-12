@@ -1,0 +1,230 @@
+{
+  "task_id": "C09",
+  "title": "Conveyor Zone Accumulation",
+  "pou": "FB_C09",
+  "scan_ms": 20,
+  "primary_axis": "sorting_filtering",
+  "interface": [
+    {
+      "name": "RunSwitch",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Enables the conveyor line"
+    },
+    {
+      "name": "Zone1Sensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Part in zone 1"
+    },
+    {
+      "name": "Zone2Sensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Part in zone 2"
+    },
+    {
+      "name": "Zone3Sensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Part in zone 3"
+    },
+    {
+      "name": "ReleaseButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Discharge zone 3"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears the jam alarm"
+    },
+    {
+      "name": "Zone1Motor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 1 motor"
+    },
+    {
+      "name": "Zone2Motor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 2 motor"
+    },
+    {
+      "name": "Zone3Motor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 3 motor"
+    },
+    {
+      "name": "Zone1Full",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 1 blocked by zone 2"
+    },
+    {
+      "name": "Zone2Full",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 2 blocked by zone 3"
+    },
+    {
+      "name": "Zone3Full",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 3 waiting for release"
+    },
+    {
+      "name": "JamAlarm",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Jam latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "normal accumulation",
+      "coverage": "zone 1 moves, zone 1 full, zone 2 moves",
+      "initial_state": "line enabled, empty",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "Zone1Sensor": 1,
+            "Zone2Sensor": 0,
+            "Zone3Sensor": 0,
+            "ReleaseButton": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Zone1Motor": 1,
+            "Zone2Motor": 0,
+            "Zone1Full": 0,
+            "JamAlarm": 0
+          },
+          "check": "zone 1 moves"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "Zone2Sensor": 1
+          },
+          "expect": {
+            "Zone1Motor": 0,
+            "Zone1Full": 1,
+            "Zone2Motor": 1,
+            "Zone2Full": 0
+          },
+          "check": "zone 1 full, zone 2 moves"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Zone3Sensor": 1
+          },
+          "expect": {
+            "Zone2Motor": 0,
+            "Zone2Full": 1,
+            "Zone3Motor": 0,
+            "Zone3Full": 1
+          },
+          "check": "zone 2 full"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "jam detection and reset",
+      "coverage": "blocked zone 1 for 5 s, jam alarm, all motors off, reset",
+      "initial_state": "line enabled",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "Zone1Sensor": 1,
+            "Zone2Sensor": 1,
+            "Zone3Sensor": 0,
+            "ReleaseButton": 0,
+            "ResetButton": 0
+          },
+          "expect": {
+            "Zone1Full": 1,
+            "JamAlarm": 1,
+            "Zone1Motor": 0,
+            "Zone2Motor": 0
+          },
+          "check": "zone 1 blocked, jam after 5 s",
+          "hold_ms": 5100
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 1,
+            "Zone1Sensor": 0,
+            "Zone2Sensor": 0
+          },
+          "expect": {
+            "JamAlarm": 0,
+            "Zone1Motor": 0,
+            "Zone2Motor": 0
+          },
+          "check": "reset and clear sensors"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "ResetButton": 0,
+            "Zone1Sensor": 1
+          },
+          "expect": {
+            "Zone1Motor": 1,
+            "JamAlarm": 0
+          },
+          "check": "line restarts"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "release zone 3",
+      "coverage": "release button runs zone 3, blocked zone 3 jams",
+      "initial_state": "line enabled",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "Zone3Sensor": 1,
+            "ReleaseButton": 1
+          },
+          "expect": {
+            "Zone3Motor": 1,
+            "Zone3Full": 0,
+            "JamAlarm": 0
+          },
+          "check": "release runs zone 3"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ReleaseButton": 0
+          },
+          "expect": {
+            "Zone3Motor": 0,
+            "Zone3Full": 1,
+            "JamAlarm": 1
+          },
+          "check": "zone 3 blocked, jam after 5 s",
+          "hold_ms": 5100
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "task_id": "C04",
+  "title": "Star-Delta Motor Starter",
+  "pou": "FB_C04",
+  "scan_ms": 20,
+  "primary_axis": "cyclic_timing",
+  "interface": [
+    {
+      "name": "StartButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Start command"
+    },
+    {
+      "name": "StopButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Stop command"
+    },
+    {
+      "name": "Overload",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Thermal overload trip"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears the fault latch"
+    },
+    {
+      "name": "MainContactor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Main contactor"
+    },
+    {
+      "name": "StarContactor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Star contactor"
+    },
+    {
+      "name": "DeltaContactor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Delta contactor"
+    },
+    {
+      "name": "Running",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Motor is running"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Overload fault latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "start, transition and stop",
+      "coverage": "star start, 3 s transition, delta run, stop",
+      "initial_state": "motor stopped",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 0,
+            "StopButton": 0,
+            "Overload": 0,
+            "ResetButton": 0
+          },
+          "expect": {
+            "MainContactor": 0,
+            "StarContactor": 0,
+            "DeltaContactor": 0,
+            "Running": 0
+          },
+          "check": "stopped"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 1
+          },
+          "expect": {
+            "MainContactor": 1,
+            "StarContactor": 1,
+            "DeltaContactor": 0,
+            "Running": 1
+          },
+          "check": "star start"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "StartButton": 0
+          },
+          "expect": {
+            "MainContactor": 1,
+            "StarContactor": 0,
+            "DeltaContactor": 1,
+            "Running": 1
+          },
+          "check": "delta after 3 s",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "StopButton": 1
+          },
+          "expect": {
+            "MainContactor": 0,
+            "StarContactor": 0,
+            "DeltaContactor": 0,
+            "Running": 0
+          },
+          "check": "stop"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "overload latch and reset",
+      "coverage": "overload during delta, fault latch, reset, restart",
+      "initial_state": "motor stopped",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1
+          },
+          "expect": {
+            "MainContactor": 1,
+            "StarContactor": 1
+          },
+          "check": "start"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0
+          },
+          "expect": {
+            "MainContactor": 1,
+            "DeltaContactor": 1
+          },
+          "check": "delta",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "Overload": 1
+          },
+          "expect": {
+            "MainContactor": 0,
+            "StarContactor": 0,
+            "DeltaContactor": 0,
+            "Fault": 1,
+            "Running": 0
+          },
+          "check": "overload trip"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "Overload": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "ResetButton": 0,
+            "StartButton": 1
+          },
+          "expect": {
+            "MainContactor": 1,
+            "StarContactor": 1
+          },
+          "check": "restart"
+        }
+      ]
+    }
+  ]
+}

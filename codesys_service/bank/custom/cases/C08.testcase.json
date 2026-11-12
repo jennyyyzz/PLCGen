@@ -1,0 +1,197 @@
+{
+  "task_id": "C08",
+  "title": "Greenhouse Irrigation Zones",
+  "pou": "FB_C08",
+  "scan_ms": 20,
+  "primary_axis": "cyclic_timing",
+  "interface": [
+    {
+      "name": "StartButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Starts an irrigation cycle"
+    },
+    {
+      "name": "StopButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Aborts the cycle"
+    },
+    {
+      "name": "Zone1Moisture",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Soil moisture of zone 1"
+    },
+    {
+      "name": "Zone2Moisture",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Soil moisture of zone 2"
+    },
+    {
+      "name": "Zone3Moisture",
+      "dir": "input",
+      "type": "REAL",
+      "desc": "Soil moisture of zone 3"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears cycle-complete state"
+    },
+    {
+      "name": "Zone1Valve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 1 valve"
+    },
+    {
+      "name": "Zone2Valve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 2 valve"
+    },
+    {
+      "name": "Zone3Valve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Zone 3 valve"
+    },
+    {
+      "name": "Pump",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Irrigation pump"
+    },
+    {
+      "name": "CycleComplete",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "All zones processed"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "dry, wet, dry zones",
+      "coverage": "zone 1 waters, zone 2 skipped, zone 3 waters, complete",
+      "initial_state": "idle, zone 1 and 3 dry",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1,
+            "StopButton": 0,
+            "Zone1Moisture": 20.0,
+            "Zone2Moisture": 50.0,
+            "Zone3Moisture": 20.0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "Zone1Valve": 1,
+            "Pump": 1,
+            "CycleComplete": 0
+          },
+          "check": "zone 1 starts"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0,
+            "ResetButton": 0
+          },
+          "expect": {
+            "Zone1Valve": 0,
+            "Zone2Valve": 0,
+            "Zone3Valve": 1,
+            "Pump": 1
+          },
+          "check": "zone 2 skipped, zone 3 starts",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 2,
+          "inputs": {},
+          "expect": {
+            "Zone3Valve": 0,
+            "Pump": 0,
+            "CycleComplete": 1
+          },
+          "check": "cycle complete",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "CycleComplete": 0,
+            "Pump": 0
+          },
+          "check": "reset complete flag"
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "all zones wet",
+      "coverage": "all zones skipped, immediate completion",
+      "initial_state": "idle",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1,
+            "Zone1Moisture": 50.0,
+            "Zone2Moisture": 50.0,
+            "Zone3Moisture": 50.0
+          },
+          "expect": {
+            "Zone1Valve": 0,
+            "Zone2Valve": 0,
+            "Zone3Valve": 0,
+            "Pump": 0,
+            "CycleComplete": 1
+          },
+          "check": "all wet, complete immediately"
+        }
+      ]
+    },
+    {
+      "id": "TC03",
+      "name": "stop aborts irrigation",
+      "coverage": "stop during zone 1, outputs off, complete cleared",
+      "initial_state": "idle",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1,
+            "Zone1Moisture": 20.0
+          },
+          "expect": {
+            "Zone1Valve": 1,
+            "Pump": 1
+          },
+          "check": "zone 1 starts"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0,
+            "StopButton": 1
+          },
+          "expect": {
+            "Zone1Valve": 0,
+            "Pump": 0,
+            "CycleComplete": 0
+          },
+          "check": "stop aborts"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "task_id": "C03",
+  "title": "Automatic Barrier Gate",
+  "pou": "FB_C03",
+  "scan_ms": 20,
+  "primary_axis": "cyclic_timing",
+  "interface": [
+    {
+      "name": "VehiclePresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Vehicle loop detector"
+    },
+    {
+      "name": "OpenButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Manual open command"
+    },
+    {
+      "name": "SafetyBeam",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Safety beam interrupted (obstacle)"
+    },
+    {
+      "name": "GateOpen",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Gate is fully open"
+    },
+    {
+      "name": "GateClosed",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Gate is fully closed"
+    },
+    {
+      "name": "WarningLight",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Safety warning lamp"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "open button and automatic close",
+      "coverage": "manual open, 3 s close delay, closed state",
+      "initial_state": "gate closed, no vehicle, no beam",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VehiclePresent": 0,
+            "OpenButton": 0,
+            "SafetyBeam": 0
+          },
+          "expect": {
+            "GateOpen": 0,
+            "GateClosed": 1,
+            "WarningLight": 0
+          },
+          "check": "initial closed"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "OpenButton": 1
+          },
+          "expect": {
+            "GateOpen": 1,
+            "GateClosed": 0,
+            "WarningLight": 0
+          },
+          "check": "manual open"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "OpenButton": 0
+          },
+          "expect": {
+            "GateOpen": 1,
+            "GateClosed": 0
+          },
+          "check": "no vehicle, close delay running"
+        },
+        {
+          "cycle": 3,
+          "inputs": {},
+          "expect": {
+            "GateOpen": 0,
+            "GateClosed": 1
+          },
+          "check": "closed after 3 s",
+          "hold_ms": 3100
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "vehicle and safety beam",
+      "coverage": "hold open by vehicle, beam warning, reopen while closed",
+      "initial_state": "gate closed",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "VehiclePresent": 1
+          },
+          "expect": {
+            "GateOpen": 1,
+            "GateClosed": 0
+          },
+          "check": "vehicle opens gate"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "VehiclePresent": 0
+          },
+          "expect": {
+            "GateOpen": 1,
+            "GateClosed": 0
+          },
+          "check": "vehicle leaves, close delay"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "SafetyBeam": 1
+          },
+          "expect": {
+            "GateOpen": 1,
+            "WarningLight": 1
+          },
+          "check": "beam keeps gate open"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "SafetyBeam": 0
+          },
+          "expect": {
+            "GateOpen": 0,
+            "GateClosed": 1,
+            "WarningLight": 0
+          },
+          "check": "beam clear, close after 3 s",
+          "hold_ms": 3100
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "SafetyBeam": 1
+          },
+          "expect": {
+            "GateOpen": 1,
+            "GateClosed": 0,
+            "WarningLight": 1
+          },
+          "check": "beam reopens closed gate"
+        }
+      ]
+    }
+  ]
+}

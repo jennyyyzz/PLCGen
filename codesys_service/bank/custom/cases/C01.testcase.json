@@ -1,0 +1,273 @@
+{
+  "task_id": "C01",
+  "title": "Product Reject and Filtering Station",
+  "pou": "FB_C01",
+  "scan_ms": 20,
+  "primary_axis": "sorting_filtering",
+  "interface": [
+    {
+      "name": "RunSwitch",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Enables the conveyor"
+    },
+    {
+      "name": "PartPresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Part is present at the inspection point"
+    },
+    {
+      "name": "DefectSensor",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "TRUE when the present part is defective"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears counters and batch-full state"
+    },
+    {
+      "name": "ConveyorMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Conveyor drive command"
+    },
+    {
+      "name": "RejectPusher",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Defective-part pusher command"
+    },
+    {
+      "name": "AcceptCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Number of accepted parts in the batch"
+    },
+    {
+      "name": "RejectCount",
+      "dir": "output",
+      "type": "INT",
+      "desc": "Number of rejected parts in the batch"
+    },
+    {
+      "name": "BatchFull",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Batch of 5 parts completed"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "accept and reject a part",
+      "coverage": "normal accept, defective reject, pusher time-out",
+      "initial_state": "counters zero, batch not full",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "PartPresent": 0,
+            "DefectSensor": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "AcceptCount": 0,
+            "RejectCount": 0,
+            "BatchFull": 0,
+            "RejectPusher": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "PartPresent": 1,
+            "DefectSensor": 0
+          },
+          "expect": {
+            "AcceptCount": 1,
+            "RejectCount": 0,
+            "RejectPusher": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "good part accepted"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 1,
+            "RejectCount": 0,
+            "RejectPusher": 0
+          },
+          "check": "part leaves"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "PartPresent": 1,
+            "DefectSensor": 1
+          },
+          "expect": {
+            "AcceptCount": 1,
+            "RejectCount": 1,
+            "RejectPusher": 1,
+            "ConveyorMotor": 1
+          },
+          "check": "defective part rejected"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "RejectCount": 1,
+            "RejectPusher": 0
+          },
+          "check": "pusher retracted after 1 s",
+          "hold_ms": 1100
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "batch of five stops the conveyor",
+      "coverage": "five accepted parts, batch full, reset",
+      "initial_state": "counters zero, batch not full",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "RunSwitch": 1,
+            "ResetButton": 1,
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 0,
+            "BatchFull": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "PartPresent": 1
+          },
+          "expect": {
+            "AcceptCount": 1,
+            "ConveyorMotor": 1
+          },
+          "check": "part 1"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 1
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "PartPresent": 1
+          },
+          "expect": {
+            "AcceptCount": 2
+          },
+          "check": "part 2"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 2
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 5,
+          "inputs": {
+            "PartPresent": 1
+          },
+          "expect": {
+            "AcceptCount": 3
+          },
+          "check": "part 3"
+        },
+        {
+          "cycle": 6,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 3
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 7,
+          "inputs": {
+            "PartPresent": 1
+          },
+          "expect": {
+            "AcceptCount": 4
+          },
+          "check": "part 4"
+        },
+        {
+          "cycle": 8,
+          "inputs": {
+            "PartPresent": 0
+          },
+          "expect": {
+            "AcceptCount": 4
+          },
+          "check": "gap"
+        },
+        {
+          "cycle": 9,
+          "inputs": {
+            "PartPresent": 1
+          },
+          "expect": {
+            "AcceptCount": 5,
+            "BatchFull": 1,
+            "ConveyorMotor": 0
+          },
+          "check": "fifth part fills batch"
+        },
+        {
+          "cycle": 10,
+          "inputs": {
+            "PartPresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "AcceptCount": 0,
+            "RejectCount": 0,
+            "BatchFull": 0,
+            "ConveyorMotor": 1
+          },
+          "check": "reset starts a new batch"
+        }
+      ]
+    }
+  ]
+}

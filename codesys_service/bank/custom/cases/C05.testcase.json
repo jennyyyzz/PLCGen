@@ -1,0 +1,229 @@
+{
+  "task_id": "C05",
+  "title": "Car Wash Sequence",
+  "pou": "FB_C05",
+  "scan_ms": 20,
+  "primary_axis": "cyclic_timing",
+  "interface": [
+    {
+      "name": "StartButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Starts a wash cycle"
+    },
+    {
+      "name": "EmergencyStop",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Emergency stop"
+    },
+    {
+      "name": "VehiclePresent",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Vehicle in the wash bay"
+    },
+    {
+      "name": "ResetButton",
+      "dir": "input",
+      "type": "BOOL",
+      "desc": "Clears the emergency fault"
+    },
+    {
+      "name": "ConveyorMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Conveyor drive"
+    },
+    {
+      "name": "FoamValve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Foam valve"
+    },
+    {
+      "name": "BrushMotor",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Brush motor"
+    },
+    {
+      "name": "RinseValve",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Rinse valve"
+    },
+    {
+      "name": "DryFan",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Dry fan"
+    },
+    {
+      "name": "CycleComplete",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Wash cycle finished"
+    },
+    {
+      "name": "Fault",
+      "dir": "output",
+      "type": "BOOL",
+      "desc": "Emergency fault latched"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC01",
+      "name": "full wash sequence",
+      "coverage": "foam, brush, rinse, dry, cycle complete",
+      "initial_state": "idle, vehicle present",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 0,
+            "EmergencyStop": 0,
+            "VehiclePresent": 0,
+            "ResetButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 0,
+            "CycleComplete": 0,
+            "Fault": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "ResetButton": 0,
+            "StartButton": 1,
+            "VehiclePresent": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "FoamValve": 1,
+            "BrushMotor": 0,
+            "CycleComplete": 0
+          },
+          "check": "foam step"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "StartButton": 0
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "FoamValve": 0,
+            "BrushMotor": 1
+          },
+          "check": "brush step",
+          "hold_ms": 2100
+        },
+        {
+          "cycle": 3,
+          "inputs": {},
+          "expect": {
+            "ConveyorMotor": 1,
+            "BrushMotor": 0,
+            "RinseValve": 1
+          },
+          "check": "rinse step",
+          "hold_ms": 2100
+        },
+        {
+          "cycle": 4,
+          "inputs": {},
+          "expect": {
+            "ConveyorMotor": 1,
+            "RinseValve": 0,
+            "DryFan": 1
+          },
+          "check": "dry step",
+          "hold_ms": 1100
+        },
+        {
+          "cycle": 5,
+          "inputs": {},
+          "expect": {
+            "ConveyorMotor": 0,
+            "DryFan": 0,
+            "CycleComplete": 1
+          },
+          "check": "cycle complete",
+          "hold_ms": 1100
+        }
+      ]
+    },
+    {
+      "id": "TC02",
+      "name": "emergency stop and reset",
+      "coverage": "emergency during foam, fault latch, reset, restart",
+      "initial_state": "idle",
+      "steps": [
+        {
+          "cycle": 0,
+          "inputs": {
+            "StartButton": 1,
+            "VehiclePresent": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "FoamValve": 1,
+            "Fault": 0
+          },
+          "check": "cycle starts"
+        },
+        {
+          "cycle": 1,
+          "inputs": {
+            "StartButton": 0,
+            "EmergencyStop": 1
+          },
+          "expect": {
+            "ConveyorMotor": 0,
+            "FoamValve": 0,
+            "Fault": 1
+          },
+          "check": "emergency stop"
+        },
+        {
+          "cycle": 2,
+          "inputs": {
+            "EmergencyStop": 0
+          },
+          "expect": {
+            "ConveyorMotor": 0,
+            "Fault": 1
+          },
+          "check": "fault remains latched"
+        },
+        {
+          "cycle": 3,
+          "inputs": {
+            "ResetButton": 1
+          },
+          "expect": {
+            "Fault": 0,
+            "ConveyorMotor": 0
+          },
+          "check": "reset"
+        },
+        {
+          "cycle": 4,
+          "inputs": {
+            "ResetButton": 0,
+            "StartButton": 1
+          },
+          "expect": {
+            "ConveyorMotor": 1,
+            "FoamValve": 1
+          },
+          "check": "restart"
+        }
+      ]
+    }
+  ]
+}
