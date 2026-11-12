@@ -1,0 +1,366 @@
+{
+  "killed": 40,
+  "total": 40,
+  "mutants": [
+    {
+      "mutant": "E01_confirm_level",
+      "task": "E01_Filling",
+      "short": "E01",
+      "change": "confirm level",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 6
+    },
+    {
+      "mutant": "E01_no_reset",
+      "task": "E01_Filling",
+      "short": "E01",
+      "change": "no reset",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 6
+    },
+    {
+      "mutant": "E02_no_prev_update",
+      "task": "E02_DualEdge",
+      "short": "E02",
+      "change": "no prev update",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 4
+    },
+    {
+      "mutant": "E02_rising_wrong",
+      "task": "E02_DualEdge",
+      "short": "E02",
+      "change": "rising wrong",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 4
+    },
+    {
+      "mutant": "E03_no_hysteresis",
+      "task": "E03_Hysteresis",
+      "short": "E03",
+      "change": "no hysteresis",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 5
+    },
+    {
+      "mutant": "E03_no_window_check",
+      "task": "E03_Hysteresis",
+      "short": "E03",
+      "change": "no window check",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 5
+    },
+    {
+      "mutant": "E04_acc_always",
+      "task": "E04_JamPump",
+      "short": "E04",
+      "change": "acc always",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 4
+    },
+    {
+      "mutant": "E04_no_debounce",
+      "task": "E04_JamPump",
+      "short": "E04",
+      "change": "no debounce",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 4
+    },
+    {
+      "mutant": "E05_no_estop",
+      "task": "E05_WeldGap",
+      "short": "E05",
+      "change": "no estop",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "E05_no_inhibit",
+      "task": "E05_WeldGap",
+      "short": "E05",
+      "change": "no inhibit",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "E06_count_level",
+      "task": "E06_Blower",
+      "short": "E06",
+      "change": "count level",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 3
+    },
+    {
+      "mutant": "E06_no_delay",
+      "task": "E06_Blower",
+      "short": "E06",
+      "change": "no delay",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 3
+    },
+    {
+      "mutant": "H01_estop_keeps_step",
+      "task": "H01_Proportion",
+      "short": "H01",
+      "change": "estop keeps step",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 6
+    },
+    {
+      "mutant": "H01_wrong_level",
+      "task": "H01_Proportion",
+      "short": "H01",
+      "change": "wrong level",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 6
+    },
+    {
+      "mutant": "H02_always_right",
+      "task": "H02_FlexProcess",
+      "short": "H02",
+      "change": "always right",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 3
+    },
+    {
+      "mutant": "H02_no_wait",
+      "task": "H02_FlexProcess",
+      "short": "H02",
+      "change": "no wait",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 3
+    },
+    {
+      "mutant": "H03_delete_wrong_code",
+      "task": "H03_RecipeMgr",
+      "short": "H03",
+      "change": "delete wrong code",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "H03_no_dup_check",
+      "task": "H03_RecipeMgr",
+      "short": "H03",
+      "change": "no dup check",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "H04_enq_level",
+      "task": "H04_FIFO",
+      "short": "H04",
+      "change": "enq level",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 5
+    },
+    {
+      "mutant": "H04_no_full_check",
+      "task": "H04_FIFO",
+      "short": "H04",
+      "change": "no full check",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 5
+    },
+    {
+      "mutant": "H05_ignore_limits",
+      "task": "H05_MechArm",
+      "short": "H05",
+      "change": "ignore limits",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 7
+    },
+    {
+      "mutant": "H05_no_continuous_restart",
+      "task": "H05_MechArm",
+      "short": "H05",
+      "change": "no continuous restart",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 7
+    },
+    {
+      "mutant": "H06_no_upper_limit",
+      "task": "H06_Production",
+      "short": "H06",
+      "change": "no upper limit",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 6
+    },
+    {
+      "mutant": "H06_wrong_temp",
+      "task": "H06_Production",
+      "short": "H06",
+      "change": "wrong temp",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 6
+    },
+    {
+      "mutant": "M01_manual_ignores_sel",
+      "task": "M01_PumpSwitch",
+      "short": "M01",
+      "change": "manual ignores sel",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M01_pick_two",
+      "task": "M01_PumpSwitch",
+      "short": "M01",
+      "change": "pick two",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M02_limit_check_off",
+      "task": "M02_AnalogBatch",
+      "short": "M02",
+      "change": "limit check off",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M02_mode_check_off",
+      "task": "M02_AnalogBatch",
+      "short": "M02",
+      "change": "mode check off",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M03_no_window_check",
+      "task": "M03_MovingAvg",
+      "short": "M03",
+      "change": "no window check",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 5
+    },
+    {
+      "mutant": "M03_trigger_level",
+      "task": "M03_MovingAvg",
+      "short": "M03",
+      "change": "trigger level",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 5
+    },
+    {
+      "mutant": "M04_no_fault",
+      "task": "M04_TempCtrl",
+      "short": "M04",
+      "change": "no fault",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 4
+    },
+    {
+      "mutant": "M04_no_overheat",
+      "task": "M04_TempCtrl",
+      "short": "M04",
+      "change": "no overheat",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 4
+    },
+    {
+      "mutant": "M05_button_level",
+      "task": "M05_ProdLine",
+      "short": "M05",
+      "change": "button level",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 6
+    },
+    {
+      "mutant": "M05_no_interlock",
+      "task": "M05_ProdLine",
+      "short": "M05",
+      "change": "no interlock",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 6
+    },
+    {
+      "mutant": "M06_count_level",
+      "task": "M06_SlabThick",
+      "short": "M06",
+      "change": "count level",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 5
+    },
+    {
+      "mutant": "M06_no_hold",
+      "task": "M06_SlabThick",
+      "short": "M06",
+      "change": "no hold",
+      "detected": true,
+      "failing_cases": 3,
+      "total_cases": 5
+    },
+    {
+      "mutant": "M07_eco_everywhere",
+      "task": "M07_HVAC",
+      "short": "M07",
+      "change": "eco everywhere",
+      "detected": true,
+      "failing_cases": 1,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M07_no_delay",
+      "task": "M07_HVAC",
+      "short": "M07",
+      "change": "no delay",
+      "detected": true,
+      "failing_cases": 2,
+      "total_cases": 3
+    },
+    {
+      "mutant": "M08_no_segcount",
+      "task": "M08_IPv4",
+      "short": "M08",
+      "change": "no segcount",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 4
+    },
+    {
+      "mutant": "M08_range_off",
+      "task": "M08_IPv4",
+      "short": "M08",
+      "change": "range off",
+      "detected": true,
+      "failing_cases": 4,
+      "total_cases": 4
+    }
+  ]
+}
